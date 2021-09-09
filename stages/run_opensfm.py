@@ -30,13 +30,13 @@ class ODMOpenSfMStage(types.ODM_Stage):
 
         octx = OSFMContext(tree.opensfm)
         octx.setup(args, tree.dataset_raw, reconstruction=reconstruction, rerun=self.rerun())
-        octx.extract_metadata(self.rerun())
-        self.update_progress(20)
-        octx.feature_matching(self.rerun())
-        self.update_progress(30)
-        octx.reconstruct(self.rerun())
-        octx.extract_cameras(tree.path("cameras.json"), self.rerun())
-        self.update_progress(70)
+        # octx.extract_metadata(self.rerun())
+        # self.update_progress(20)
+        # octx.feature_matching(self.rerun())
+        # self.update_progress(30)
+        # octx.reconstruct(self.rerun())
+        # octx.extract_cameras(tree.path("cameras.json"), self.rerun())
+        # self.update_progress(70)
 
         def cleanup_disk_space():
             if args.optimize_disk_space:

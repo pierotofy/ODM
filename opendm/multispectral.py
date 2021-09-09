@@ -395,6 +395,9 @@ def compute_homography(image_filename, align_image_filename):
         return warp_matrix, dimension, algo
 
     except Exception as e:
+        import traceback, sys
+        traceback.print_exc(limit=2, file=sys.stderr)
+
         log.ODM_WARNING("Compute homography: %s" % str(e))
         return None, None, (None, None)
 

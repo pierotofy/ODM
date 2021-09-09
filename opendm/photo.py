@@ -57,7 +57,7 @@ class ODM_Photo:
         # Multi-band fields
         self.band_name = 'RGB'
         self.band_index = 0
-        self.capture_uuid = None # DJI only
+        self.capture_uuid = None
 
         # Multi-spectral fields
         self.fnumber = None
@@ -196,6 +196,17 @@ class ODM_Photo:
                     if band_name is not None:
                         self.band_name = band_name.replace(" ", "")
 
+                    # Quantix mapper's BandName cannot be trusted
+                    # For some reason in older versions every image has the same band name
+                    if self.band_name is not None and "," in self.band_name and self.camera_make == "AeroVironment" and self.camera_model == "Quantix":
+                        band_regex = re.compile(r"^.+\_(\w{3})\.\w{3,4}$")
+                        match = band_regex.search(self.filename)
+                        if match:
+                            self.band_name = match.group(1)
+                            log.ODM_INFO("[Quantix Mapper] Matched %s as %s" % (self.filename, self.band_name))
+                        else:
+                            log.ODM_WARNING("[Quantix Mapper] band name match failed, %s does not seem to have a band prefix, using %s." % (self.filename, self.band_name))
+
                     self.set_attr_from_xmp_tag('band_index', tags, [
                         'DLS:SensorId', # Micasense RedEdge
                         '@Camera:RigCameraIndex', # Parrot Sequoia, Sentera 21244-00_3.2MP-GS-0001
@@ -236,6 +247,7 @@ class ODM_Photo:
                     self.set_attr_from_xmp_tag('capture_uuid', tags, [
                         '@drone-dji:CaptureUUID', # DJI
                         '@Camera:ImageUniqueID', # sentera 6x
+                        '@Camera:CaptureUUID', # Quantix mapper
                     ])
 
                     # Phantom 4 RTK
