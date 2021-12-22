@@ -64,7 +64,7 @@ jobs:
     #   run: cmd /c info.bat
     # - name: Keep your VM alive.
     #   run: cmd /c loop.bat
-    # - name: Build sources
+    - name: Build sources
       run: |
         python configure.py build
       shell: cmd
