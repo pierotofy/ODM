@@ -64,10 +64,13 @@ jobs:
     #   run: cmd /c info.bat
     # - name: Keep your VM alive.
     #   run: cmd /c loop.bat
+    - name: Exec batch
+      run: |
+        "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/../../../../../../../VC/Auxiliary/Build/vcvars64.bat"
+      shell: cmd
     - name: Build sources
       run: |
         python configure.py build
-      shell: cmd
     - name: Create setup
       env: 
         CODE_SIGN_CERT_PATH: ${{ steps.code_sign.outputs.filePath }}
