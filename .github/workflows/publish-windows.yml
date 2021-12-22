@@ -16,10 +16,10 @@ jobs:
       with:
         python-version: '3.8.1'
         architecture: 'x64'
-    - name: Setup Visual C++
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
+    # - name: Setup Visual C++
+    #   uses: ilammy/msvc-dev-cmd@v1
+    #   with:
+    #     arch: x64
     - uses: Jimver/cuda-toolkit@v0.2.4
       id: cuda-toolkit
       with:
@@ -64,10 +64,6 @@ jobs:
     #   run: cmd /c info.bat
     # - name: Keep your VM alive.
     #   run: cmd /c loop.bat
-    - name: Exec batch
-      run: |
-        "C:/Program Files (x86)/Microsoft Visual Studio/2019/Enterprise/VC/Tools/MSVC/14.29.30133/bin/Hostx64/x64/../../../../../../../VC/Auxiliary/Build/vcvars64.bat"
-      shell: cmd
     - name: Build sources
       run: |
         python configure.py build
