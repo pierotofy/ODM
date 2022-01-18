@@ -301,7 +301,7 @@ def compute_euclidean_map(geotiff_path, output_path, overwrite=False):
         return output_path
 
 
-def median_smoothing(geotiff_path, output_path, smoothing_iterations=1):
+def median_smoothing(geotiff_path, output_path, smoothing_iterations=1, size=5):
     """ Apply median smoothing """
     start = datetime.now()
 
@@ -317,19 +317,9 @@ def median_smoothing(geotiff_path, output_path, smoothing_iterations=1):
 
         nodata_locs = numpy.where(arr == nodata)
 
-        # Median filter (careful, changing the value 5 might require tweaking)
-        # the lines below. There's another numpy function that takes care of 
-        # these edge cases, but it's slower.
         for i in range(smoothing_iterations):
             log.ODM_INFO("Smoothing iteration %s" % str(i + 1))
-            arr = ndimage.median_filter(arr, size=5, output=dtype)
-
-        # Fill corner points with nearest value
-        if arr.shape >= (4, 4):
-            arr[0][:2] = arr[1][0] = arr[1][1]
-            arr[0][-2:] = arr[1][-1] = arr[2][-1]
-            arr[-1][:2] = arr[-2][0] = arr[-2][1]
-            arr[-1][-2:] = arr[-2][-1] = arr[-2][-2]
+            arr = ndimage.median_filter(arr, size=size, output=dtype, mode='nearest')
 
         # Median filter leaves a bunch of zeros in nodata areas
         arr[nodata_locs] = nodata
@@ -342,9 +332,38 @@ def median_smoothing(geotiff_path, output_path, smoothing_iterations=1):
 
     return output_path
 
+def max_filter(geotiff_path, output_path, size=5):
+    start = datetime.now()
+
+    if not os.path.exists(geotiff_path):
+        raise Exception('File %s does not exist!' % geotiff_path)
+
+    log.ODM_INFO('Starting max filter...')
+
+    with rasterio.open(geotiff_path) as img:
+        nodata = img.nodatavals[0]
+        dtype = img.dtypes[0]
+        arr = img.read()[0]
+
+        nodata_locs = numpy.where(arr == nodata)
+
+        arr = ndimage.maximum_filter(arr, size=size, output=dtype, mode='nearest')
+
+        # Median filter leaves a bunch of zeros in nodata areas
+        arr[nodata_locs] = nodata
+
+        # write output
+        with rasterio.open(output_path, 'w', **img.profile) as imgout:
+            imgout.write(arr, 1)
+    
+    log.ODM_INFO('Completed max filter to create %s in %s' % (output_path, datetime.now() - start))
+
+    return output_path
+
 
 def shrink_expand_dem(input_geotiff, output_geotiff, scale_factor, interpolation="bilinear", max_workers=1):
-    resized_geotiff = io.related_file_path(input_geotiff, postfix='_resized')
+    maxed_geotiff = io.related_file_path(input_geotiff, postfix='_maxed')
+    resized_geotiff = io.related_file_path(maxed_geotiff, postfix='_resized')
     smoothed_geotiff = io.related_file_path(resized_geotiff, postfix='_smoothed')
 
     kwargs = {
@@ -353,11 +372,14 @@ def shrink_expand_dem(input_geotiff, output_geotiff, scale_factor, interpolation
         'input_geotiff': input_geotiff,
         'resized_geotiff': resized_geotiff,
         'smoothed_geotiff': smoothed_geotiff,
+        'maxed_geotiff': maxed_geotiff,
         'output_geotiff': output_geotiff,
         'interpolation': interpolation,
         'scale': scale_factor * 100,
-        'scale_i': (1.0 / scale_factor) * 100 * 4,
+        'scale_i': (1.0 / scale_factor) * 100,
     }
+
+    max_filter(input_geotiff, maxed_geotiff, size=3)
 
     # Scale
     run('gdal_translate '
@@ -365,10 +387,10 @@ def shrink_expand_dem(input_geotiff, output_geotiff, scale_factor, interpolation
         '-co BIGTIFF=IF_SAFER '
         '--config GDAL_CACHEMAX {max_memory}% '
         '-outsize {scale}% 0 '
-        '"{input_geotiff}" "{resized_geotiff}"'.format(**kwargs))
+        '"{maxed_geotiff}" "{resized_geotiff}"'.format(**kwargs))
     
     # Median filter
-    #median_smoothing(resized_geotiff, smoothed_geotiff)
+    median_smoothing(resized_geotiff, smoothed_geotiff, smoothing_iterations=3, size=1)
 
     # Scale back
     run('gdal_translate '
@@ -377,7 +399,7 @@ def shrink_expand_dem(input_geotiff, output_geotiff, scale_factor, interpolation
     '-r {interpolation} '
     '--config GDAL_CACHEMAX {max_memory}% '
     '-outsize {scale_i}% 0 '
-    '"{resized_geotiff}" "{output_geotiff}"'.format(**kwargs))
+    '"{smoothed_geotiff}" "{output_geotiff}"'.format(**kwargs))
 
     # for f in [resized_geotiff, smoothed_geotiff]:
     #     if os.path.isfile(f):
