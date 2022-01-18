@@ -36,10 +36,15 @@ def create_25dmesh(inPointCloud, outMesh, dsm_radius=0.07, dsm_resolution=0.05, 
             apply_smoothing=smooth_dsm
         )
 
+    mesh_dsm = os.path.join(tmp_directory, 'mesh_dsm.tif')
+    se_mesh_dsm = os.path.join(tmp_directory, 'se_mesh_dsm.tif')
+    commands.shrink_expand_dem(mesh_dsm, se_mesh_dsm, scale_factor=0.5, max_workers=available_cores)
+    #se_mesh_dsm = os.path.join(tmp_directory, 'mesh_dsm.tif')
+
     if method == 'gridded':
-        mesh = dem_to_mesh_gridded(os.path.join(tmp_directory, 'mesh_dsm.tif'), outMesh, maxVertexCount, verbose, maxConcurrency=max(1, available_cores))
+        mesh = dem_to_mesh_gridded(se_mesh_dsm, outMesh, maxVertexCount, verbose, maxConcurrency=max(1, available_cores))
     elif method == 'poisson':
-        dsm_points = dem_to_points(os.path.join(tmp_directory, 'mesh_dsm.tif'), os.path.join(tmp_directory, 'dsm_points.ply'), verbose)
+        dsm_points = dem_to_points(se_mesh_dsm, os.path.join(tmp_directory, 'dsm_points.ply'), verbose)
         mesh = screened_poisson_reconstruction(dsm_points, outMesh, depth=depth, 
                                     samples=samples, 
                                     maxVertexCount=maxVertexCount, 

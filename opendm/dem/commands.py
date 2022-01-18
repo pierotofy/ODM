@@ -341,3 +341,46 @@ def median_smoothing(geotiff_path, output_path, smoothing_iterations=1):
     log.ODM_INFO('Completed smoothing to create %s in %s' % (output_path, datetime.now() - start))
 
     return output_path
+
+
+def shrink_expand_dem(input_geotiff, output_geotiff, scale_factor, interpolation="bilinear", max_workers=1):
+    resized_geotiff = io.related_file_path(input_geotiff, postfix='_resized')
+    smoothed_geotiff = io.related_file_path(resized_geotiff, postfix='_smoothed')
+
+    kwargs = {
+        'max_memory': get_max_memory(),
+        'threads': max_workers if max_workers else 'ALL_CPUS',
+        'input_geotiff': input_geotiff,
+        'resized_geotiff': resized_geotiff,
+        'smoothed_geotiff': smoothed_geotiff,
+        'output_geotiff': output_geotiff,
+        'interpolation': interpolation,
+        'scale': scale_factor * 100,
+        'scale_i': (1.0 / scale_factor) * 100 * 4,
+    }
+
+    # Scale
+    run('gdal_translate '
+        '-co NUM_THREADS={threads} '
+        '-co BIGTIFF=IF_SAFER '
+        '--config GDAL_CACHEMAX {max_memory}% '
+        '-outsize {scale}% 0 '
+        '"{input_geotiff}" "{resized_geotiff}"'.format(**kwargs))
+    
+    # Median filter
+    #median_smoothing(resized_geotiff, smoothed_geotiff)
+
+    # Scale back
+    run('gdal_translate '
+    '-co NUM_THREADS={threads} '
+    '-co BIGTIFF=IF_SAFER '
+    '-r {interpolation} '
+    '--config GDAL_CACHEMAX {max_memory}% '
+    '-outsize {scale_i}% 0 '
+    '"{resized_geotiff}" "{output_geotiff}"'.format(**kwargs))
+
+    # for f in [resized_geotiff, smoothed_geotiff]:
+    #     if os.path.isfile(f):
+    #         os.remove(f)
+    
+    return output_geotiff
