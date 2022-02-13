@@ -457,8 +457,8 @@ def edge_refinement(geotiff_path, output_path, size=9):
         raise Exception('File %s does not exist!' % geotiff_path)
 
     # TODO: compute edges
-    edges_geotiff = "/datasets/brighton2/sobel_tests/edges.tif"
-    # edges_geotiff = "/datasets/cmparks/sobel_tests/edges.tif"
+    # edges_geotiff = "/datasets/brighton2/sobel_tests/edges.tif"
+    edges_geotiff = "/datasets/cmparks/sobel_tests/edges.tif"
 
     log.ODM_INFO('Starting edge refinement filter...')
     #smoothed_geotiff = io.related_file_path(geotiff_path, postfix='_smoothed')
