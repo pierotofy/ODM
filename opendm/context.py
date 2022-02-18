@@ -28,7 +28,9 @@ dem2mesh_path = os.path.join(superbuild_bin_path, 'dem2mesh')
 dem2points_path = os.path.join(superbuild_bin_path, 'dem2points')
 
 # define mvstex path
-mvstex_path = os.path.join(superbuild_bin_path, "texrecon")
+# TODO: REMOVE
+#mvstex_path = os.path.join(superbuild_bin_path, "texrecon")
+mvstex_path = "/code/SuperBuild/src/mvstexturing/build/apps/texrecon/texrecon"
 
 # openmvs paths
 omvs_densify_path = os.path.join(superbuild_bin_path, "OpenMVS", "DensifyPointCloud")

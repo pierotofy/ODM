@@ -301,7 +301,7 @@ def compute_euclidean_map(geotiff_path, output_path, overwrite=False):
         return output_path
 
 
-def median_smoothing(geotiff_path, output_path, smoothing_iterations=1):
+def median_smoothing(geotiff_path, output_path, smoothing_iterations=1, size=5):
     """ Apply median smoothing """
     start = datetime.now()
 
@@ -317,19 +317,9 @@ def median_smoothing(geotiff_path, output_path, smoothing_iterations=1):
 
         nodata_locs = numpy.where(arr == nodata)
 
-        # Median filter (careful, changing the value 5 might require tweaking)
-        # the lines below. There's another numpy function that takes care of 
-        # these edge cases, but it's slower.
         for i in range(smoothing_iterations):
             log.ODM_INFO("Smoothing iteration %s" % str(i + 1))
-            arr = ndimage.median_filter(arr, size=5, output=dtype)
-
-        # Fill corner points with nearest value
-        if arr.shape >= (4, 4):
-            arr[0][:2] = arr[1][0] = arr[1][1]
-            arr[0][-2:] = arr[1][-1] = arr[2][-1]
-            arr[-1][:2] = arr[-2][0] = arr[-2][1]
-            arr[-1][-2:] = arr[-2][-1] = arr[-2][-2]
+            arr = ndimage.median_filter(arr, size=size, output=dtype, mode='nearest')
 
         # Median filter leaves a bunch of zeros in nodata areas
         arr[nodata_locs] = nodata
@@ -341,3 +331,178 @@ def median_smoothing(geotiff_path, output_path, smoothing_iterations=1):
     log.ODM_INFO('Completed smoothing to create %s in %s' % (output_path, datetime.now() - start))
 
     return output_path
+
+def max_filter(geotiff_path, output_path, size=5):
+    start = datetime.now()
+
+    if not os.path.exists(geotiff_path):
+        raise Exception('File %s does not exist!' % geotiff_path)
+
+    log.ODM_INFO('Starting max filter...')
+
+    with rasterio.open(geotiff_path) as img:
+        nodata = img.nodatavals[0]
+        dtype = img.dtypes[0]
+        arr = img.read()[0]
+
+        nodata_locs = numpy.where(arr == nodata)
+
+        arr = ndimage.maximum_filter(arr, size=size, output=dtype, mode='nearest')
+ 
+        # Median filter leaves a bunch of zeros in nodata areas
+        arr[nodata_locs] = nodata
+        with rasterio.open(output_path, 'w', **img.profile) as imgout:
+            imgout.write(arr, 1)
+     
+    log.ODM_INFO('Completed max filter to create %s in %s' % (output_path, datetime.now() - start))
+
+    return output_path
+
+
+def shrink_smooth_expand_dem(input_geotiff, output_geotiff, scale_factor, interpolation="bilinear", max_workers=1):
+    # maxed_geotiff = io.related_file_path(input_geotiff, postfix='_maxed')    
+    resized_geotiff = io.related_file_path(input_geotiff, postfix='_resized')
+    smoothed_geotiff = io.related_file_path(resized_geotiff, postfix='_smoothed')
+    
+    with rasterio.open(input_geotiff) as f:
+        w = f.profile['width']
+        h = f.profile['height']
+    
+    scaled_w = int(round(w * scale_factor))
+    scaled_h = int(round(h * scale_factor))
+
+    kwargs = {
+        'max_memory': get_max_memory(),
+        'threads': max_workers if max_workers else 'ALL_CPUS',
+        'input_geotiff': input_geotiff,
+        # 'maxed_geotiff': maxed_geotiff,
+        'resized_geotiff': resized_geotiff,
+        'smoothed_geotiff': smoothed_geotiff,
+        'output_geotiff': output_geotiff,
+        'interpolation': interpolation,
+        'outsize': '%s %s' % (scaled_w, scaled_h),
+        'outsize_i': '%s %s' % (w, h),
+    }
+
+    # max_filter(input_geotiff, maxed_geotiff, size=3)
+
+    # Scale
+    run('gdal_translate '
+        '-co NUM_THREADS={threads} '
+        '-co BIGTIFF=IF_SAFER '
+        '--config GDAL_CACHEMAX {max_memory}% '
+        '-outsize {outsize} '
+        '"{input_geotiff}" "{resized_geotiff}"'.format(**kwargs))
+    
+    # Median filter
+    median_smoothing(resized_geotiff, smoothed_geotiff, smoothing_iterations=1, size=5)
+
+    # Scale back
+    run('gdal_translate '
+    '-co NUM_THREADS={threads} '
+    '-co BIGTIFF=IF_SAFER '
+    '-r {interpolation} '
+    '--config GDAL_CACHEMAX {max_memory}% '
+    '-outsize {outsize_i} '
+    '"{smoothed_geotiff}" "{output_geotiff}"'.format(**kwargs))
+
+    # for f in [resized_geotiff, smoothed_geotiff]:
+    #     if os.path.isfile(f):
+    #         os.remove(f)
+    
+    return output_geotiff
+
+
+def masked_median_smoothing(geotiff_path, output_path, edges_path, smoothing_iterations=1, size=5):
+    """ Apply median smoothing """
+    start = datetime.now()
+
+    if not os.path.exists(geotiff_path):
+        raise Exception('File %s does not exist!' % geotiff_path)
+
+    log.ODM_INFO('Starting masked smoothing...')
+
+    with rasterio.open(geotiff_path) as img:
+        nodata = img.nodatavals[0]
+        dtype = img.dtypes[0]
+        arr = img.read()[0]
+
+        with rasterio.open(edges_path) as fedges:
+            edges = fedges.read()[0]
+
+        nodata_locs = numpy.where(arr == nodata)
+        no_edges = numpy.where(edges<=1)
+        
+        arr[no_edges] = nodata
+
+        for i in range(smoothing_iterations):
+            log.ODM_INFO("Smoothing iteration %s" % str(i + 1))
+            arr = ndimage.median_filter(arr, size=size, output=dtype, mode='nearest')
+
+        # Median filter leaves a bunch of zeros in nodata areas
+        arr[nodata_locs] = nodata
+        arr[no_edges] = nodata
+
+        # write output
+        with rasterio.open(output_path, 'w', **img.profile) as imgout:
+            imgout.write(arr, 1)
+    
+    log.ODM_INFO('Completed smoothing to create %s in %s' % (output_path, datetime.now() - start))
+
+    return output_path
+
+
+def edge_refinement(geotiff_path, output_path, size=9):
+    if not os.path.exists(geotiff_path):
+        raise Exception('File %s does not exist!' % geotiff_path)
+
+    # TODO: compute edges
+    # edges_geotiff = "/datasets/brighton2/sobel_tests/edges.tif"
+    edges_geotiff = "/datasets/cmparks/sobel_tests/edges.tif"
+
+    log.ODM_INFO('Starting edge refinement filter...')
+    #smoothed_geotiff = io.related_file_path(geotiff_path, postfix='_smoothed')
+    #shrink_smooth_expand_dem(geotiff_path, smoothed_geotiff, scale_factor=0.5)
+
+    #masked_median_smoothing(geotiff_path, smoothed_geotiff, edges_geotiff, size=5)
+
+
+    # with rasterio.open(smoothed_geotiff) as f:
+    #     median_data = f.read()[0]
+    with rasterio.open(edges_geotiff) as f:
+        mask = f.read()[0]
+    with rasterio.open(geotiff_path) as f:
+        input_data = f.read()[0]
+        dtype = f.dtypes[0]
+        nodata = f.nodatavals[0]
+        nodata_locs = input_data == nodata
+        smoothed_data = None
+        edges_locs = mask>=2
+
+        # min_data = ndimage.minimum_filter(input_data, size=5, output=dtype, mode='nearest')
+        # min_data[edges_locs] = input_data[edges_locs]
+
+        sz = 1
+        for i in range(0, 4):
+            if smoothed_data is None:
+                smoothed_data = ndimage.median_filter(input_data, size=sz, output=dtype, mode='nearest')
+            else:
+                smoothed_data = ndimage.median_filter(smoothed_data, size=sz, output=dtype, mode='nearest')
+
+            smoothed_data[edges_locs] = input_data[edges_locs]
+            sz += 2
+
+        # input_data[median_locs] += median_data[median_locs]
+        # input_data[median_locs] /= 2.0
+
+        smoothed_data = ndimage.median_filter(smoothed_data, size=5, output=dtype, mode='nearest')
+
+        smoothed_data[nodata_locs] = nodata
+
+        
+
+        # input_data[median_locs] = max_data[median_locs]
+
+        with rasterio.open(output_path, "w", **f.profile) as fout:
+            fout.write(smoothed_data, 1)
+    

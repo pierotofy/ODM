@@ -41,7 +41,7 @@ class ODMMvsTexStage(types.ODM_Stage):
             if not args.use_3dmesh:
                 nonloc.runs += [{
                     'out_dir': os.path.join(tree.odm_25dtexturing, subdir),
-                    'model': tree.odm_25dmesh,
+                    'model':  os.path.join(tree.odm_meshing, "odm_25dmesh_mod_2.ply"),#tree.odm_25dmesh,
                     'nadir': True,
                     'primary': primary,
                     'nvm_file': nvm_file,
@@ -123,7 +123,7 @@ class ODMMvsTexStage(types.ODM_Stage):
                         '{keepUnseenFaces} '
                         '{nadirMode} '
                         '{labelingFile} '
-                        '{maxTextureSize} '.format(**kwargs))
+                        '{maxTextureSize}'.format(**kwargs))
                 
                 # Backward compatibility: copy odm_textured_model_geo.mtl to odm_textured_model.mtl
                 # for certain older WebODM clients which expect a odm_textured_model.mtl
