@@ -477,10 +477,11 @@ def edge_refinement(geotiff_path, output_path, size=9):
         nodata = f.nodatavals[0]
         nodata_locs = input_data == nodata
         smoothed_data = None
-        edges_locs = mask>=2
+        edges_locs = mask>=4
+        non_edge_locs = mask<4
 
-        # min_data = ndimage.minimum_filter(input_data, size=5, output=dtype, mode='nearest')
-        # min_data[edges_locs] = input_data[edges_locs]
+        min_data = ndimage.minimum_filter(input_data, size=5, output=dtype, mode='nearest')
+        input_data[non_edge_locs] = min_data[non_edge_locs]
 
         sz = 1
         for i in range(0, 4):
