@@ -64,7 +64,6 @@ def load_obj(obj_path):
                 
                 faces.append(((av, bv, cv), (at, bt, ct), current_material)) 
 
-
     obj['vertices'] = np.array(vertices)
     obj['uvs'] = np.array(uvs)
     obj['faces'] = faces
@@ -95,7 +94,19 @@ def load_mtl(mtl_file, obj_base_path):
                     mats[current_mtl] = reshape_as_image(r.read())
     return mats
 
+
+
+def render_orthophoto(input_objs, resolution):
+    if isinstance(input_objs, str):
+        input_objs = [input_objs]
+    
+    for in_obj in input_objs:
+        obj = load_obj(in_obj)
+        _info("Number of faces: %s" % len(obj['faces']))
+
 set_renderer_logger(print, print)
 
-obj = load_obj("/datasets/brighton2/odm_texturing_25d/odm_textured_model_geo.obj")
-_info("Number of faces: %s" % len(obj['faces']))
+render_orthophoto(["/datasets/brighton2/odm_texturing_25d/odm_textured_model_geo.obj"], 5.0)
+
+# TODO - Compute area boundaries
+# 
