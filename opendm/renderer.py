@@ -3,6 +3,7 @@ import rasterio
 import numpy as np
 import warnings
 import os
+import numexpr as ne
 
 # Originally ported from https://github.com/OpenDroneMap/odm_orthophoto
 
@@ -296,14 +297,101 @@ def render_orthophoto(input_objs, resolution, output):
             # For each face in the current material
             mat_faces = faces[faces[:,0] == mat_idx]
 
+            # TODO REMOVE
+            mat_faces = mat_faces[:1]
+            print(mat_faces)
+            print(mat_faces.shape)
+
+            v = mat_faces[:,1:10]
+            t = mat_faces[:,10:]
+
+            v1 = v[:,0:3]
+            v2 = v[:,3:6]
+            v3 = v[:,6:9]
+            print(v1)
+            print(v2)
+            print(v3)
+
+            v1x = v1[:,0]
+            v2x = v2[:,0]
+            v3x = v3[:,0]
+            
+            v1y = v1[:,1]
+            v2y = v2[:,1]
+            v3y = v3[:,1]
+
+            top_r = ne.evaluate("""where(v1y < v2y, 
+                    where(v1y < v3y, 
+                        v1y, # 1 -> 2 -> 3, 1 -> 3 -> 2 
+                        v3y), # 3 -> 1 -> 2
+                    where(v2y < v3y,
+                        v2y, # 2 -> 1 -> 3,  2 -> 3 -> 1 
+                        v3y) # 3 -> 2 -> 1
+            )""")
+            top_c = ne.evaluate("""where(v1y < v2y, 
+                    where(v1y < v3y, 
+                        v1x, # 1 -> 2 -> 3, 1 -> 3 -> 2 
+                        v3x), # 3 -> 1 -> 2
+                    where(v2y < v3y,
+                        v2x, # 2 -> 1 -> 3,  2 -> 3 -> 1 
+                        v3x) # 3 -> 2 -> 1
+            )""")
+
+            mid_r = ne.evaluate("""where(v1y < v2y, 
+                    where(v1y < v3y, 
+                        where(v2y < v3y, 
+                            v2y, # 1 -> 2 -> 3
+                            v3y), # 1 -> 3 -> 2
+                        v1y), # 3 -> 1 -> 2
+                    where(v2y < v3y,
+                        where(v1y < v3y, 
+                            v1y, # 2 -> 1 -> 3 
+                            v3y), # 2 -> 3 -> 1 
+                        v2y) # -> 3 -> 2 -> 1
+            )""")
+
+            mid_c = ne.evaluate("""where(v1y < v2y, 
+                    where(v1y < v3y, 
+                        where(v2y < v3y, 
+                            v2x, # 1 -> 2 -> 3
+                            v3x), # 1 -> 3 -> 2
+                        v1x), # 3 -> 1 -> 2
+                    where(v2y < v3y,
+                        where(v1y < v3y, 
+                            v1x, # 2 -> 1 -> 3 
+                            v3x), # 2 -> 3 -> 1 
+                        v2x) # -> 3 -> 2 -> 1
+            )""")
+
+            bot_r = ne.evaluate("""where(v1y < v2y, 
+                    where(v1y < v3y, 
+                        where(v2y < v3y, 
+                            v3y, # 1 -> 2 -> 3
+                            v2y), # 1 -> 3 -> 2
+                        v2y), # 3 -> 1 -> 2
+                    where(v2y < v3y,
+                        where(v1y < v3y, 
+                            v3y, # 2 -> 1 -> 3 
+                            v1y), # 2 -> 3 -> 1 
+                        v1y) # -> 3 -> 2 -> 1
+            )""")
+
+            bot_c = ne.evaluate("""where(v1y < v2y, 
+                    where(v1y < v3y, 
+                        where(v2y < v3y, 
+                            v3x, # 1 -> 2 -> 3
+                            v2x), # 1 -> 3 -> 2
+                        v2x), # 3 -> 1 -> 2
+                    where(v2y < v3y,
+                        where(v1y < v3y, 
+                            v3x, # 2 -> 1 -> 3 
+                            v1x), # 2 -> 3 -> 1 
+                        v1x) # -> 3 -> 2 -> 1
+            )""")
+
+
             for f in mat_faces:
                 # Draw textured triangle
-
-                # v1i, v2i, v3i = f[0]
-                # v1 = obj['vertices'][v1i]
-                # v2 = obj['vertices'][v2i]
-                # v3 = obj['vertices'][v3i]
-
                 v = f[1:10]
                 t = f[10:]
 
@@ -356,8 +444,6 @@ def render_orthophoto(input_objs, resolution, output):
                         top_r, top_c = v3[1], v3[0]
                         mid_r, mid_c = v2[1], v2[0]
                         bot_r, bot_c = v1[1], v1[0]
-                # rows = float(height)
-                # cols = float(width)
 
                 # General appreviations:
                 # ---------------------
