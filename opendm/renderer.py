@@ -298,96 +298,141 @@ def render_orthophoto(input_objs, resolution, output):
             mat_faces = faces[faces[:,0] == mat_idx]
 
             # TODO REMOVE
-            mat_faces = mat_faces[:1]
-            print(mat_faces)
-            print(mat_faces.shape)
+            #mat_faces = mat_faces[:2]
+            # print(mat_faces)
 
-            v = mat_faces[:,1:10]
-            t = mat_faces[:,10:]
+            # v = mat_faces[:,1:10]
+            # t = mat_faces[:,10:]
 
-            v1 = v[:,0:3]
-            v2 = v[:,3:6]
-            v3 = v[:,6:9]
-            print(v1)
-            print(v2)
-            print(v3)
+            # v1 = v[:,0:3]
+            # v2 = v[:,3:6]
+            # v3 = v[:,6:9]
 
-            v1x = v1[:,0]
-            v2x = v2[:,0]
-            v3x = v3[:,0]
+            # v1x = v1[:,0]
+            # v2x = v2[:,0]
+            # v3x = v3[:,0]
             
-            v1y = v1[:,1]
-            v2y = v2[:,1]
-            v3y = v3[:,1]
+            # v1y = v1[:,1]
+            # v2y = v2[:,1]
+            # v3y = v3[:,1]
 
-            top_r = ne.evaluate("""where(v1y < v2y, 
-                    where(v1y < v3y, 
-                        v1y, # 1 -> 2 -> 3, 1 -> 3 -> 2 
-                        v3y), # 3 -> 1 -> 2
-                    where(v2y < v3y,
-                        v2y, # 2 -> 1 -> 3,  2 -> 3 -> 1 
-                        v3y) # 3 -> 2 -> 1
-            )""")
-            top_c = ne.evaluate("""where(v1y < v2y, 
-                    where(v1y < v3y, 
-                        v1x, # 1 -> 2 -> 3, 1 -> 3 -> 2 
-                        v3x), # 3 -> 1 -> 2
-                    where(v2y < v3y,
-                        v2x, # 2 -> 1 -> 3,  2 -> 3 -> 1 
-                        v3x) # 3 -> 2 -> 1
-            )""")
+            # # Top point row and column positions
+            # top_r = ne.evaluate("""where(v1y < v2y, 
+            #         where(v1y < v3y, 
+            #             v1y, # 1 -> 2 -> 3, 1 -> 3 -> 2 
+            #             v3y), # 3 -> 1 -> 2
+            #         where(v2y < v3y,
+            #             v2y, # 2 -> 1 -> 3,  2 -> 3 -> 1 
+            #             v3y) # 3 -> 2 -> 1
+            # )""")
+            # top_c = ne.evaluate("""where(v1y < v2y, 
+            #         where(v1y < v3y, 
+            #             v1x, # 1 -> 2 -> 3, 1 -> 3 -> 2 
+            #             v3x), # 3 -> 1 -> 2
+            #         where(v2y < v3y,
+            #             v2x, # 2 -> 1 -> 3,  2 -> 3 -> 1 
+            #             v3x) # 3 -> 2 -> 1
+            # )""")
 
-            mid_r = ne.evaluate("""where(v1y < v2y, 
-                    where(v1y < v3y, 
-                        where(v2y < v3y, 
-                            v2y, # 1 -> 2 -> 3
-                            v3y), # 1 -> 3 -> 2
-                        v1y), # 3 -> 1 -> 2
-                    where(v2y < v3y,
-                        where(v1y < v3y, 
-                            v1y, # 2 -> 1 -> 3 
-                            v3y), # 2 -> 3 -> 1 
-                        v2y) # -> 3 -> 2 -> 1
-            )""")
+            # # Middle point row and column positions
+            # mid_r = ne.evaluate("""where(v1y < v2y, 
+            #         where(v1y < v3y, 
+            #             where(v2y < v3y, 
+            #                 v2y, # 1 -> 2 -> 3
+            #                 v3y), # 1 -> 3 -> 2
+            #             v1y), # 3 -> 1 -> 2
+            #         where(v2y < v3y,
+            #             where(v1y < v3y, 
+            #                 v1y, # 2 -> 1 -> 3 
+            #                 v3y), # 2 -> 3 -> 1 
+            #             v2y) # -> 3 -> 2 -> 1
+            # )""")
 
-            mid_c = ne.evaluate("""where(v1y < v2y, 
-                    where(v1y < v3y, 
-                        where(v2y < v3y, 
-                            v2x, # 1 -> 2 -> 3
-                            v3x), # 1 -> 3 -> 2
-                        v1x), # 3 -> 1 -> 2
-                    where(v2y < v3y,
-                        where(v1y < v3y, 
-                            v1x, # 2 -> 1 -> 3 
-                            v3x), # 2 -> 3 -> 1 
-                        v2x) # -> 3 -> 2 -> 1
-            )""")
+            # mid_c = ne.evaluate("""where(v1y < v2y, 
+            #         where(v1y < v3y, 
+            #             where(v2y < v3y, 
+            #                 v2x, # 1 -> 2 -> 3
+            #                 v3x), # 1 -> 3 -> 2
+            #             v1x), # 3 -> 1 -> 2
+            #         where(v2y < v3y,
+            #             where(v1y < v3y, 
+            #                 v1x, # 2 -> 1 -> 3 
+            #                 v3x), # 2 -> 3 -> 1 
+            #             v2x) # -> 3 -> 2 -> 1
+            # )""")
 
-            bot_r = ne.evaluate("""where(v1y < v2y, 
-                    where(v1y < v3y, 
-                        where(v2y < v3y, 
-                            v3y, # 1 -> 2 -> 3
-                            v2y), # 1 -> 3 -> 2
-                        v2y), # 3 -> 1 -> 2
-                    where(v2y < v3y,
-                        where(v1y < v3y, 
-                            v3y, # 2 -> 1 -> 3 
-                            v1y), # 2 -> 3 -> 1 
-                        v1y) # -> 3 -> 2 -> 1
-            )""")
+            # # Bottom point row and column positions
+            # bot_r = ne.evaluate("""where(v1y < v2y, 
+            #         where(v1y < v3y, 
+            #             where(v2y < v3y, 
+            #                 v3y, # 1 -> 2 -> 3
+            #                 v2y), # 1 -> 3 -> 2
+            #             v2y), # 3 -> 1 -> 2
+            #         where(v2y < v3y,
+            #             where(v1y < v3y, 
+            #                 v3y, # 2 -> 1 -> 3 
+            #                 v1y), # 2 -> 3 -> 1 
+            #             v1y) # -> 3 -> 2 -> 1
+            # )""")
 
-            bot_c = ne.evaluate("""where(v1y < v2y, 
-                    where(v1y < v3y, 
-                        where(v2y < v3y, 
-                            v3x, # 1 -> 2 -> 3
-                            v2x), # 1 -> 3 -> 2
-                        v2x), # 3 -> 1 -> 2
-                    where(v2y < v3y,
-                        where(v1y < v3y, 
-                            v3x, # 2 -> 1 -> 3 
-                            v1x), # 2 -> 3 -> 1 
-                        v1x) # -> 3 -> 2 -> 1
-            )""")
+            # bot_c = ne.evaluate("""where(v1y < v2y, 
+            #         where(v1y < v3y, 
+            #             where(v2y < v3y, 
+            #                 v3x, # 1 -> 2 -> 3
+            #                 v2x), # 1 -> 3 -> 2
+            #             v2x), # 3 -> 1 -> 2
+            #         where(v2y < v3y,
+            #             where(v1y < v3y, 
+            #                 v3x, # 2 -> 1 -> 3 
+            #                 v1x), # 2 -> 3 -> 1 
+            #             v1x) # -> 3 -> 2 -> 1
+            # )""")
+
+            # General appreviations:
+            # ---------------------
+            # tm : Top(to)Middle.
+            # mb : Middle(to)Bottom.
+            # tb : Top(to)Bottom.
+            # c  : column.
+            # r  : row.
+            # dr : DeltaRow, step value per row.
+
+            # The step along column for every step along r. Top to bottom.
+            #with np.errstate(divide='ignore'):
+            # np.seterr(divide='ignore')
+            # ctbdr = (bot_c - top_c) / (bot_r - top_r)
+            # ctmdr = (mid_c - top_c) / (mid_r - top_r)
+
+            # def process(cond, dr, r_start, r_end, ctdr):
+            #     dr_ = dr[cond]
+            #     r_start_ = r_start[cond]
+            #     r_end_ = r_end[cond]
+            #     ctdr_ = ctdr[cond]
+            #     top_r_ = top_r[cond]
+            #     top_c_ = top_c[cond]
+
+            #     rq_start = np.maximum(np.rint(np.floor(r_start + 0.5)), 0)
+            #     rq_end = np.minimum(np.rint(np.floor(r_end + 0.5)), height)
+            #     print(rq_start)
+            #     print(rq_end)
+
+            #     print(np.mgrid[rq_start:rq_end])
+            #     # Set the current column positions.
+            #     # ct = top_c_ + ctdr * (float(rq)+0.5-top_r_)
+            #     # print(ct)
+
+            #     exit(1)
+            
+            # 2
+            # process(eps < mid_r - top_r, (mid_c - top_c) / (mid_r - top_r), top_r, mid_r, ctmdr)
+
+            # 1
+            # process(eps < bot_r - mid_r,  (bot_c - mid_c) / (bot_r - mid_r), mid_r, bot_r, ctbdr)
+            
+
+
+
+            # exit(1)
 
 
             for f in mat_faces:
@@ -464,9 +509,9 @@ def render_orthophoto(input_objs, resolution, output):
                 ctbdr = (bot_c - top_c) / (bot_r - top_r)
 
                 # The current column position, from top to middle.
-                ctm = top_c
+                #ctm = top_c
                 # The current column position, from top to bottom.
-                ctb = top_c
+                #ctb = top_c
 
                 # Check for vertical line between middle and top.
                 if eps < mid_r - top_r:
@@ -485,7 +530,7 @@ def render_orthophoto(input_objs, resolution, output):
 
                         # The first pixel column for the current row
                         cq_start = max(int(np.floor(0.5 + min(ctm, ctb))), 0)
-                        
+
                         # The last pixel column for the current row.
                         cq_end = min(int(np.floor(0.5 + max(ctm, ctb))), width)
 
