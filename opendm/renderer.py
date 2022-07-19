@@ -244,7 +244,8 @@ def render_orthophoto(input_objs, resolution, output):
 
         all_bands = []
         alpha_band = None
-        depth = np.full((width, height), -np.inf, dtype=np.float32)
+
+        depth = np.full((height, width), -np.inf, dtype=np.float32)
         # materials_idx = list(obj['materials'].keys())
 
         faces = []
@@ -283,8 +284,8 @@ def render_orthophoto(input_objs, resolution, output):
                 _info("Texture bands: %s" % texture.shape[0])
                 _info("Texture type: %s" % texture.dtype)
 
-                bands = np.full((texture.shape[0], width, height), max_range(data_type), dtype=data_type)
-                alpha_band = np.zeros((width, height), dtype=data_type)
+                bands = np.full((texture.shape[0], height, width), max_range(data_type), dtype=data_type)
+                alpha_band = np.zeros((height, width), dtype=data_type)
                 all_bands.append(bands)
 
             # Render
@@ -409,7 +410,7 @@ def render_orthophoto(input_objs, resolution, output):
 
                             z = v1[2] * l1 + v2[2] * l2 + v3[2] * l3
 
-                            depth_value = depth[cq,rq]
+                            depth_value = depth[rq,cq]
                             if z < depth_value:
                                 # Current is behind another, don't draw
                                 continue
@@ -443,15 +444,15 @@ def render_orthophoto(input_objs, resolution, output):
                                 value += bl * dr * dt
                                 value += br * dl * dt
 
-                                bands[current_band_index + i,cq,rq] = value
+                                bands[current_band_index + i,rq,cq] = value
 
                             # Increment the alpha band if the pixel was visible for this band
                             # the final alpha band will be set to 255 if alpha == num bands
                             # (all bands have information at this pixel)
-                            alpha_band[cq,rq] += num_channels
+                            alpha_band[rq,cq] += num_channels
 
                             # Update depth buffer
-                            depth[cq,rq] = z
+                            depth[rq,cq] = z
                 
                 if eps < bot_r - mid_r:
                     cmbdr = (bot_c - mid_c) / (bot_r - mid_r)
@@ -483,7 +484,7 @@ def render_orthophoto(input_objs, resolution, output):
 
                             z = v1[2] * l1 + v2[2] * l2 + v3[2] * l3
 
-                            depth_value = depth[cq,rq]
+                            depth_value = depth[rq,cq]
                             if z < depth_value:
                                 # Current is behind another, don't draw
                                 continue
@@ -517,15 +518,15 @@ def render_orthophoto(input_objs, resolution, output):
                                 value += bl * dr * dt
                                 value += br * dl * dt
 
-                                bands[current_band_index + i,cq,rq] = value
+                                bands[current_band_index + i,rq,cq] = value
 
                             # Increment the alpha band if the pixel was visible for this band
                             # the final alpha band will be set to 255 if alpha == num bands
                             # (all bands have information at this pixel)
-                            alpha_band[cq,rq] += num_channels
+                            alpha_band[rq,cq] += num_channels
 
                             # Update depth buffer
-                            depth[cq,rq] = z
+                            depth[rq,cq] = z
             _info("Material %s rendered" % mat)
 
             mat_idx += 1
