@@ -33,6 +33,9 @@ class ODMOpenMVSStage(types.ODM_Stage):
             openmvs_scene_file = os.path.join(tree.openmvs, "scene.mvs")
             if not io.file_exists(openmvs_scene_file) or self.rerun():
                 cmd = 'export_openmvs'
+
+                # if True:
+                #     cmd += ' --line3dpp %s/undistorted/Line3D++/output.bin' % tree.opensfm
                 octx.run(cmd)
             else:
                 log.ODM_WARNING("Found existing %s" % openmvs_scene_file)
@@ -62,6 +65,10 @@ class ODMOpenMVSStage(types.ODM_Stage):
             densify_ini_file = os.path.join(tree.openmvs, 'Densify.ini')
             subres_levels = 2 # The number of lower resolutions to process before estimating output resolution depthmap.
 
+            line3dpp = '%s/undistorted/Line3D++/output.bin' % tree.opensfm
+            if not os.path.isfile(line3dpp):
+                line3dpp = None
+
             config = [
                 " --resolution-level %s" % int(resolution_level),
                 '--dense-config-file "%s"' % densify_ini_file,
@@ -71,8 +78,12 @@ class ODMOpenMVSStage(types.ODM_Stage):
                 "--number-views-fuse %s" % number_views_fuse,
                 "--sub-resolution-levels %s" % subres_levels,
                 '-w "%s"' % depthmaps_dir, 
-                "-v 0"
+                # "-v 0"
+                "-v 99"
             ]
+
+            if line3dpp is not None:
+                config.append('--sparse-constraints-file "%s"' % line3dpp)
 
             gpu_config = []
             use_gpu = has_gpu(args)
