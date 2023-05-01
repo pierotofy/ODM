@@ -138,7 +138,7 @@ class ODMMvsTexStage(types.ODM_Stage):
                         odm_textured_model_glb = os.path.join(r['out_dir'], tree.odm_textured_model_glb)
             
                         try:
-                            obj2glb(odm_textured_model_obj, odm_textured_model_glb, rtc=reconstruction.get_proj_offset(), _info=log.ODM_INFO)
+                            obj2glb(odm_textured_model_obj, odm_textured_model_glb, rtc=reconstruction.get_proj_offset(), _info=log.ODM_INFO, draco_compression=False)
                         except Exception as e:
                             log.ODM_WARNING(str(e))
 
