@@ -44,7 +44,10 @@ class ODMeshingStage(types.ODM_Stage):
 
               multiplier = math.pi / 2.0
               radius_steps = commands.get_dem_radius_steps(tree.filtered_point_cloud_stats, 3, args.orthophoto_resolution, multiplier=multiplier)
-              dsm_resolution = radius_steps[0] / multiplier
+              dsm_resolution = gsd.cap_resolution((radius_steps[0] / multiplier) * 100.0, tree.opensfm_reconstruction,
+                                                   ignore_gsd=args.ignore_gsd,
+                                                   ignore_resolution=(not reconstruction.is_georeferenced()) and args.ignore_gsd,
+                                                   has_gcp=reconstruction.has_gcp()) / 100.0
 
               log.ODM_INFO('ODM 2.5D DSM resolution: %s' % dsm_resolution)
               
