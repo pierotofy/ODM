@@ -50,8 +50,8 @@ def dn_to_temperature(photo, image, images_path):
                 return image
             else:
                 return image
-        elif photo.camera_make == "DJI" and photo.camera_model == "MAVIC2-ENTERPRISE-ADVANCED":
-            image = dji_unpack.extract_temperatures_dji(photo, image, images_path)
+        elif photo.camera_make == "DJI" and photo.camera_model in ["MAVIC2-ENTERPRISE-ADVANCED", "M30T"]:
+            image = dji_unpack.extract_temperatures_dji(photo, images_path)
             image = image.astype("float32")
             return image
         else:

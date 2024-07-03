@@ -297,6 +297,15 @@ class ODMLoadDatasetStage(types.ODM_Stage):
         log.ODM_INFO('Found %s usable images' % len(photos))
         log.logger.log_json_images(len(photos))
 
+        for p in photos:
+            from opendm import thermal
+            from PIL import Image
+            temps = thermal.dn_to_temperature(p, None, tree.dataset_raw)
+
+            Image.fromarray(temps).save('/datasets/dji_thermal/celsius.tiff')
+            # print(temps)
+            exit(1)
+
         # Create reconstruction object
         reconstruction = types.ODM_Reconstruction(photos)
         

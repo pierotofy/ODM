@@ -780,12 +780,11 @@ class ODM_Photo:
             self.camera_projection = camera_projection
 
     def is_thermal(self):
-        #Added for support M2EA camera sensor
-        if(self.camera_make == "DJI" and self.camera_model == "MAVIC2-ENTERPRISE-ADVANCED" and self.width == 640 and self.height == 512):
-            return True
-        #Added for support DJI H20T camera sensor
-        if(self.camera_make == "DJI" and self.camera_model == "ZH20T" and self.width == 640 and self.height == 512):
-            return True
+        if self.camera_make == "DJI":
+            if self.camera_model in ["MAVIC2-ENTERPRISE-ADVANCED", "ZH20T"] and self.width == 640 and self.height == 512:
+                return True
+            if self.camera_model == "M30T" and self.width == 1280 and self.height == 1024:
+                return True
         return self.band_name.upper() in ["LWIR"] # TODO: more?
     
     def is_rgb(self):
