@@ -51,9 +51,12 @@ def dn_to_temperature(photo, image, images_path):
             else:
                 return image
         elif photo.camera_make == "DJI" and photo.camera_model in ["MAVIC2-ENTERPRISE-ADVANCED", "M30T"]:
-            image = dji_unpack.extract_temperatures_dji(photo, images_path)
-            image = image.astype("float32")
-            return image
+            celsius = dji_unpack.extract_temperatures_dji(photo, images_path)
+            if image is None:
+                return image
+
+            celsius = image.astype("float32")
+            return celsius
         else:
             try:
                 params, image = extract_raw_thermal_image_data(os.path.join(images_path, photo.filename))

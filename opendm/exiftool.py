@@ -2,6 +2,7 @@ import json
 import os
 import tempfile
 import base64
+import numpy as np
 from rasterio.io import MemoryFile
 from opendm.system import run
 from opendm import log
@@ -36,6 +37,31 @@ def extract_raw_thermal_image_data(image_path):
                                 img = img[0][:,:,None]
 
                         del j["RawThermalImage"]
+                    
+                    elif "ThermalData" in j:
+                        thermal_data = base64.b64decode(j["ThermalData"][len("base64:"):])
+                        thermal_data_buf = np.frombuffer(thermal_data, dtype=np.int16)
+
+                        thermal_calibration = base64.b64decode(j["ThermalCalibration"][len("base64:"):])
+                        thermal_calibration_buf = np.frombuffer(thermal_calibration, dtype=np.int16)
+                        thermal_calibration_buf = thermal_calibration_buf[0x100:0x1d00]
+                        # TODO: how to interpret these?
+                        # https://exiftool.org/forum/index.php?topic=11401.45
+                        # print(thermal_data_buf.shape)
+                        # print(thermal_calibration_buf.shape)
+                        # print(" ".join("%02x" % b for b in thermal_data_buf[0:10]))
+                        # print(thermal_data_buf[0:10])
+                        print(thermal_calibration_buf[128:128+40])
+                        # print(thermal_calibration_buf[0x100:0x100 + 128])
+                        # print(np.min(thermal_data_buf))
+                        # print(np.max(thermal_data_buf))
+                        # print(np.min(thermal_calibration_buf))
+                        # print(np.max(thermal_calibration_buf))
+                        
+
+                        with open("/datasets/dji_thermal/calib.raw", "wb") as f:
+                            f.write(thermal_calibration)
+                        exit(1)
                     
                     return extract_temperature_params_from(j), img
                 else:
@@ -79,11 +105,11 @@ def extract_temperature_params_from(tags):
         "IRWindowTemperature": (unit("C"), 20),
         "IRWindowTransmission": (float, 1),
         "RelativeHumidity": (unit("%"), 40),
-        "PlanckR1": (float, 21106.77),
-        "PlanckB": (float, 1501),
-        "PlanckF": (float, 1),
-        "PlanckO": (float, -7340),
-        "PlanckR2": (float, 0.012545258),
+        "PlanckR1": (float, None),
+        "PlanckB": (float, None),
+        "PlanckF": (float, None),
+        "PlanckO": (float, None),
+        "PlanckR2": (float, None),
     }
 
     aliases = {
@@ -103,14 +129,12 @@ def extract_temperature_params_from(tags):
                 val = unit_func(tags[k])
                 break
         if val is None:
-            val = meta[m][1] # Default
+            val = meta[m][1] # Default, if available
         if val is None:
             raise Exception("Cannot find %s in tags" % m)
         
         params[m] = val
     
-    # params["PlanckR1"] = 14364.633
-    # params["PlanckO"] = -8192
     return params
 
     

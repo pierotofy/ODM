@@ -299,10 +299,15 @@ class ODMLoadDatasetStage(types.ODM_Stage):
 
         for p in photos:
             from opendm import thermal
+            from opendm.exiftool import extract_raw_thermal_image_data
             from PIL import Image
-            temps = thermal.dn_to_temperature(p, None, tree.dataset_raw)
 
-            Image.fromarray(temps).save('/datasets/dji_thermal/celsius.tiff')
+
+            extract_raw_thermal_image_data(os.path.join(tree.dataset_raw, p.filename))
+            exit(1)
+            temps = thermal.dn_to_temperature(p, None, tree.dataset_raw)
+            if temps is not None:
+                Image.fromarray(temps).save('/datasets/dji_thermal/celsius.tiff')
             # print(temps)
             exit(1)
 
