@@ -72,6 +72,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
                 "--min-resolution %s" % min_resolution,
                 "--max-threads %s" % args.max_concurrency,
                 "--number-views-fuse %s" % number_views_fuse,
+                '--postprocess-dmaps 7', # nOptimize
                 "--sub-resolution-levels %s" % subres_levels,
                 "--archive-type 3",
                 '-w "%s"' % depthmaps_dir, 
@@ -96,7 +97,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
                 extra_config.append("--ignore-mask-label 0")
 
             with open(densify_ini_file, 'w+') as f:
-                f.write("Optimize = 7\nMin Views Filter = 1\n")
+                f.write("Min Views Filter = 1\n")
 
             def run_densify():
                 system.run('"%s" "%s" %s' % (context.omvs_densify_path, 
@@ -129,7 +130,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
 
                 subscene_densify_ini_file = os.path.join(tree.openmvs, 'subscene-config.ini')
                 with open(subscene_densify_ini_file, 'w+') as f:
-                    f.write("Optimize = 0\nEstimation Geometric Iters = 0\nMin Views Filter = 1\n")
+                    f.write("Estimation Geometric Iters = 0\nMin Views Filter = 1\n")
 
                 config = [
                     "--sub-scene-area 660000", # 8000
