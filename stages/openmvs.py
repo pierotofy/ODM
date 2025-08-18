@@ -171,6 +171,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
                             '--max-threads %s' % args.max_concurrency,
                             '--archive-type 3',
                             '--postprocess-dmaps 0',
+                            "--fusion-filter 1",
                             '--geometric-iters 0',
                             '-w "%s"' % depthmaps_dir,
                             '-v 0',
