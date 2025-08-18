@@ -35,9 +35,9 @@ jobs:
         tag-semver: |
           {{version}}
     - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 10
+      uses: pierotofy/set-swap-space@master
+      with:
+        swap-size-gb: 10
     - name: Build and push Docker image
       id: docker_build
       uses: docker/build-push-action@v2
