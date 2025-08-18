@@ -72,7 +72,8 @@ class ODMOpenMVSStage(types.ODM_Stage):
                 "--min-resolution %s" % min_resolution,
                 "--max-threads %s" % args.max_concurrency,
                 "--number-views-fuse %s" % number_views_fuse,
-                '--postprocess-dmaps 7', # nOptimize
+                "--postprocess-dmaps 11", # nOptimize
+                "--fusion-filter 1",
                 "--sub-resolution-levels %s" % subres_levels,
                 "--archive-type 3",
                 '-w "%s"' % depthmaps_dir, 
