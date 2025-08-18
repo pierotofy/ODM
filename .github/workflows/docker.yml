@@ -1,4 +1,4 @@
-name: Publish Docker and WSL Images
+name: Publish Docker
 
 on:
   push:
