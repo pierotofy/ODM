@@ -15,7 +15,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v3
       with:
         config-inline: |
           [worker.oci]
@@ -46,7 +46,6 @@ jobs:
         no-cache: true
         tags: |
           pierotofy/odm:latest-amd64
-        provenance: false
 
   build-arm64:
     runs-on: macos-latest
@@ -55,7 +54,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v3
       with:
         config-inline: |
           [worker.oci]
@@ -79,7 +78,6 @@ jobs:
         no-cache: true
         tags: |
           pierotofy/odm:latest-arm64
-        provenance: false
 
   create-manifest:
     runs-on: ubuntu-latest
