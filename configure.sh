@@ -86,9 +86,16 @@ installdepsfromsnapcraft() {
         SNAPCRAFT_FILE="snapcraft21.yaml"
     fi
 
-    cat snap/$SNAPCRAFT_FILE | \
-        shyaml get-values-0 parts.$section.$key | \
-        xargs -0 sudo $APT_GET install -y -qq --no-install-recommends
+    for i in {1..10}; do
+        if cat snap/$SNAPCRAFT_FILE | \
+            shyaml get-values-0 parts.$section.$key | \
+            xargs -0 sudo $APT_GET install -y -qq --no-install-recommends; then
+            break
+        else
+            echo "Attempt $i failed, sleeping 10 seconds..."
+            sleep 10
+        fi
+    done
 }
 
 installruntimedepsonly() {
