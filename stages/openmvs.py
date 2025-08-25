@@ -72,7 +72,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
                 "--min-resolution %s" % min_resolution,
                 "--max-threads %s" % args.max_concurrency,
                 "--number-views-fuse %s" % number_views_fuse,
-                "--postprocess-dmaps 7", # nOptimize
+                "--postprocess-dmaps 3", # nOptimize
                 "--fusion-filter 1",
                 "--sub-resolution-levels %s" % subres_levels,
                 "--archive-type 3",
@@ -98,7 +98,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
                 extra_config.append("--ignore-mask-label 0")
 
             with open(densify_ini_file, 'w+') as f:
-                f.write("Min Views Filter = 1\n")
+                f.write("Min Views Filter = 1\nInterpolate Gap Size = 29\n")
 
             def run_densify():
                 system.run('"%s" "%s" %s' % (context.omvs_densify_path, 
