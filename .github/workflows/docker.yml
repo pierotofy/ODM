@@ -29,13 +29,16 @@ jobs:
       id: docker_meta
       uses: crazy-max/ghaction-docker-meta@v1
       with:
-        images: pierotofy/odm
+        images: ${{secrets.DOCKERHUB_REPO}}
         tag-semver: |
           {{version}}
     - name: Set Swap Space
       uses: pierotofy/set-swap-space@master
       with:
         swap-size-gb: 10
+    - uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_KEY }}
     - name: Build and push Docker image (AMD64)
       id: docker_build_amd64
       uses: docker/build-push-action@v6
@@ -45,8 +48,10 @@ jobs:
         push: true
         no-cache: true
         tags: |
-          pierotofy/odm:latest-amd64
+          ${{secrets.DOCKERHUB_REPO}}:latest-amd64
         provenance: false
+        ssh: |
+            default=${{ env.SSH_AUTH_SOCK }}
 
   build-arm64:
     runs-on: ubuntu-24.04-arm
@@ -78,8 +83,10 @@ jobs:
         push: true
         no-cache: true
         tags: |
-          pierotofy/odm:latest-arm64
+          ${{secrets.DOCKERHUB_REPO}}:latest-arm64
         provenance: false
+        ssh: |
+            default=${{ env.SSH_AUTH_SOCK }}
 
   create-manifest:
     runs-on: ubuntu-latest
@@ -92,12 +99,12 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Create and push multi-platform manifest
       run: |
-        docker pull --platform linux/amd64 pierotofy/odm:latest-amd64
-        docker pull --platform linux/arm64 pierotofy/odm:latest-arm64
-        docker manifest create pierotofy/odm:latest \
-          pierotofy/odm:latest-amd64 \
-          pierotofy/odm:latest-arm64
-        docker manifest push pierotofy/odm:latest
+        docker pull --platform linux/amd64 ${{secrets.DOCKERHUB_REPO}}:latest-amd64
+        docker pull --platform linux/arm64 ${{secrets.DOCKERHUB_REPO}}:latest-arm64
+        docker manifest create ${{secrets.DOCKERHUB_REPO}}:latest \
+          ${{secrets.DOCKERHUB_REPO}}:latest-amd64 \
+          ${{secrets.DOCKERHUB_REPO}}:latest-arm64
+        docker manifest push ${{secrets.DOCKERHUB_REPO}}:latest
     
     # Trigger NodeODM build
     - name: Dispatch NodeODM Build Event
