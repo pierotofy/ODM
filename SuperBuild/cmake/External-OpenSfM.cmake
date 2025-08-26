@@ -24,7 +24,7 @@ ExternalProject_Add(${_proj_name}
   STAMP_DIR         ${_SB_BINARY_DIR}/stamp
   #--Download step--------------
   DOWNLOAD_DIR      ${SB_DOWNLOAD_DIR}
-  GIT_REPOSITORY    https://github.com/pierotofy/OpenSfM/
+  GIT_REPOSITORY    ssh://git@github.com/pierotofy/OpenSfM.git
   GIT_TAG           390
   #--Update/Patch step----------
   UPDATE_COMMAND    git submodule update --init --recursive
