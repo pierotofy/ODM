@@ -158,6 +158,11 @@ install() {
         fi
     fi
 
+    if [ ! -f $HOME/.ssh/known_hosts ]; then
+        mkdir -p $HOME/.ssh
+        ssh-keyscan github.com >> $HOME/.ssh/known_hosts
+    fi
+
     set -eo pipefail
     
     echo "Compiling SuperBuild"
