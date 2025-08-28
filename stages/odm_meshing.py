@@ -41,10 +41,14 @@ class ODMeshingStage(types.ODM_Stage):
           if not io.file_exists(tree.odm_25dmesh) or self.rerun():
 
               log.ODM_INFO('Writing ODM 2.5D Mesh file in: %s' % tree.odm_25dmesh)
+              ortho_resolution = gsd.cap_resolution(args.orthophoto_resolution, tree.opensfm_reconstruction,
+                                            ignore_gsd=args.ignore_gsd,
+                                            ignore_resolution=(not reconstruction.is_georeferenced()) and args.ignore_gsd,
+                                            has_gcp=reconstruction.has_gcp()) / 100.0
 
               multiplier = math.pi / 2.0
-              radius_steps = commands.get_dem_radius_steps(tree.filtered_point_cloud_stats, 3, args.orthophoto_resolution, multiplier=multiplier)
-              dsm_resolution = radius_steps[0] / multiplier
+              radius_steps = commands.get_dem_radius_steps(tree.filtered_point_cloud_stats, 3, ortho_resolution, multiplier=multiplier)
+              dsm_resolution = max(ortho_resolution, radius_steps[0] / multiplier)
 
               log.ODM_INFO('ODM 2.5D DSM resolution: %s' % dsm_resolution)
               
