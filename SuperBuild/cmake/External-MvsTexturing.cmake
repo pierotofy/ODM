@@ -9,7 +9,7 @@ ExternalProject_Add(${_proj_name}
   #--Download step--------------
   DOWNLOAD_DIR      ${SB_DOWNLOAD_DIR}/${_proj_name}
   GIT_REPOSITORY    ssh://git@github.com/pierotofy/mvs-texturing.git
-  GIT_TAG           392
+  GIT_TAG           394
   #--Update/Patch step----------
   UPDATE_COMMAND    ""
   #--Configure step-------------
