@@ -137,9 +137,9 @@ def create_dem(input_point_cloud, dem_type, output_type='max', radiuses=['0.56']
         'threads': max_workers if max_workers else 'ALL_CPUS',
         'tiles_vrt': tiles_vrt_path,
         'merged_vrt': merged_vrt_path,
-        'geotiff': geotiff_path,
         'geotiff_small': geotiff_small_path,
-        'geotiff_small_filled': geotiff_small_filled_path
+        'geotiff_small_filled': geotiff_small_filled_path,
+        'output': output_path
     }
 
     if gapfill:
@@ -167,27 +167,19 @@ def create_dem(input_point_cloud, dem_type, output_type='max', radiuses=['0.56']
         
         # Merge filled scaled DEM with unfilled DEM using bilinear interpolation
         run('gdalbuildvrt -resolution highest -r bilinear "%s" "%s" "%s"' % (merged_vrt_path, geotiff_small_filled_path, tiles_vrt_path))
+    else:
+        merged_vrt_path = tiles_vrt_path
+
+    if apply_smoothing:
+        median_smoothing(merged_vrt_path, output_path, num_workers=max_workers)
+    else:
         run('gdal_translate '
             '-co NUM_THREADS={threads} '
             '-co TILED=YES '
             '-co BIGTIFF=IF_SAFER '
             '-co COMPRESS=DEFLATE '
             '--config GDAL_CACHEMAX {max_memory}% '
-            '"{merged_vrt}" "{geotiff}"'.format(**kwargs))
-    else:
-        run('gdal_translate '
-                '-co NUM_THREADS={threads} '
-                '-co TILED=YES '
-                '-co BIGTIFF=IF_SAFER '
-                '-co COMPRESS=DEFLATE '
-                '--config GDAL_CACHEMAX {max_memory}% '
-                '"{tiles_vrt}" "{geotiff}"'.format(**kwargs))
-
-    if apply_smoothing:
-        median_smoothing(geotiff_path, output_path, num_workers=max_workers)
-        os.remove(geotiff_path)
-    else:
-        os.replace(geotiff_path, output_path)
+            '"{merged_vrt}" "{output}"'.format(**kwargs))
 
     if os.path.exists(tiles_vrt_path):
         if with_euclidean_map:

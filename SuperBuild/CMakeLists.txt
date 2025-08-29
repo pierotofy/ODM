@@ -252,8 +252,8 @@ externalproject_add(odm_orthophoto
 )
 
 externalproject_add(fastrasterfilter
-    GIT_REPOSITORY    https://github.com/OpenDroneMap/FastRasterFilter.git
-    GIT_TAG           main
+    GIT_REPOSITORY    https://github.com/pierotofy/FastRasterFilter.git
+    GIT_TAG           392
     PREFIX            ${SB_BINARY_DIR}/fastrasterfilter
     SOURCE_DIR        ${SB_SOURCE_DIR}/fastrasterfilter
     CMAKE_ARGS        -DCMAKE_INSTALL_PREFIX:PATH=${SB_INSTALL_DIR}
