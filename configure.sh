@@ -158,6 +158,12 @@ install() {
         fi
     fi
 
+    if [ ! -z "$PORTABLE_X64_ARCH" ]; then
+        echo "Using x64 arch: $PORTABLE_X64_ARCH"
+    else
+        echo "Using default portable arch"
+    fi
+
     if [ ! -f $HOME/.ssh/known_hosts ]; then
         mkdir -p $HOME/.ssh
         ssh-keyscan github.com >> $HOME/.ssh/known_hosts
