@@ -228,8 +228,8 @@ class ODMOpenMVSStage(types.ODM_Stage):
                         try:
                             system.run('"%s" %s' % (context.omvs_densify_path, ' '.join(config + gpu_config + extra_config)))
                         except system.SubprocessException as e:
-                            if e.errorCode == 137 or e.errorCode == 143 or e.errorCode == 3221226505:
-                                log.ODM_WARNING("OpenMVS filtering ran out of memory, visibility checks will be skipped.")
+                            if e.errorCode == 139 or e.errorCode == 137 or e.errorCode == 143 or e.errorCode == 3221226505:
+                                log.ODM_WARNING("Unexpected process termination, visibility checks will be skipped.")
                                 skip_filtering()
                             else:
                                 raise e
