@@ -10,7 +10,7 @@ do
 done
 
 if [[ -z "$PORTABLE_X64_ARCH" ]]; then
-    ARCH=skylake
+    ARCH=nehalem
 else
     ARCH=$PORTABLE_X64_ARCH
 fi
