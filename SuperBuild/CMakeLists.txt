@@ -269,9 +269,9 @@ externalproject_add(lastools
 )
 
 externalproject_add(draco
-    GIT_REPOSITORY    https://github.com/OpenDroneMap/draco
+    GIT_REPOSITORY    https://github.com/pierotofy/draco
     GIT_SHALLOW       ON
-    GIT_TAG           304
+    GIT_TAG           396
     PREFIX            ${SB_BINARY_DIR}/draco
     SOURCE_DIR        ${SB_SOURCE_DIR}/draco
     CMAKE_ARGS        -DDRACO_TRANSCODER_SUPPORTED=ON 
