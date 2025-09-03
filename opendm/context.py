@@ -24,6 +24,7 @@ for p in python_packages_paths:
 opensfm_path = os.path.join(superbuild_bin_path, "opensfm")
 
 poisson_recon_path = os.path.join(superbuild_bin_path, 'PoissonRecon')
+surface_trimmer_path = os.path.join(superbuild_bin_path, 'SurfaceTrimmer')
 dem2mesh_path = os.path.join(superbuild_bin_path, 'dem2mesh')
 dem2points_path = os.path.join(superbuild_bin_path, 'dem2points')
 

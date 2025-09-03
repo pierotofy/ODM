@@ -147,6 +147,10 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
     if os.path.isfile(outMeshDirty):
         os.remove(outMeshDirty)
     
+    outMeshTrimmed = os.path.join(mesh_path, "{}.trimmed{}".format(basename, ext))
+    if os.path.isfile(outMeshTrimmed):
+        os.remove(outMeshTrimmed)
+    
     # Since PoissonRecon has some kind of a race condition on ppc64el, and this helps...
     if platform.machine() == 'ppc64le':
         log.ODM_WARNING("ppc64le platform detected, forcing single-threaded operation for PoissonRecon")
@@ -171,7 +175,8 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
                     '--pointWeight {pointWeight} '
                     '--samplesPerNode {samples} '
                     '--threads {threads} '
-                    '--bType 2 '
+                    '--density '
+                    '--bType 3 '
                     '--linearFit '.format(**poissonReconArgs))
         except Exception as e:
             log.ODM_WARNING(str(e))
@@ -188,13 +193,36 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
                 break
             else:
                 log.ODM_WARNING("PoissonRecon failed with %s threads, let's retry with %s..." % (threads * 2, threads))
+    
+    # Trim
+    cleanupInput = outMeshTrimmed
 
+    try:
+        surfaceTrimmerArgs = {
+            'bin': context.surface_trimmer_path,
+            'outfile': outMeshTrimmed,
+            'infile': outMeshDirty,
+            'trim': 7,
+        }
+
+        system.run('"{bin}" --in "{infile}" '
+                '--out "{outfile}" '
+                '--removeIslands '
+                '--aRatio 0.01 '
+                '--trim {trim} '.format(**surfaceTrimmerArgs))
+        
+        if not os.path.isfile(outMeshTrimmed):
+            log.ODM_WARNING("Mesh trimming failed, falling back...")
+            cleanupInput = outMeshDirty
+    except Exception as e:
+        log.ODM_WARNING(str(e))
+        cleanupInput = outMeshDirty
 
     # Cleanup and reduce vertex count if necessary
     cleanupArgs = {
         'reconstructmesh': context.omvs_reconstructmesh_path,
         'outfile': outMesh,
-        'infile':outMeshDirty,
+        'infile':cleanupInput,
         'max_faces': maxVertexCount * 2
     }
 
@@ -205,6 +233,8 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
          '--target-face-num {max_faces} -v 0'.format(**cleanupArgs))
 
     # Delete intermediate results
-    os.remove(outMeshDirty)
+    for f in [outMeshDirty, outMeshTrimmed]:
+        if os.path.isfile(f):
+            os.remove(f)
 
     return outMesh

@@ -203,8 +203,9 @@ if (WIN32)
     set (POISSON_BUILD_CMD ${CMAKE_MAKE_PROGRAM} ${SB_SOURCE_DIR}/PoissonRecon/PoissonRecon.vcxproj /p:configuration=${CMAKE_BUILD_TYPE} /p:Platform=x64 /p:PlatformToolset=${CMAKE_VS_PLATFORM_TOOLSET} /p:WindowsTargetPlatformVersion=${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION})
     set (POISSON_BIN_PATH "x64/${CMAKE_BUILD_TYPE}/PoissonRecon.exe")
 else()
-    set (POISSON_BUILD_CMD  make -j${nproc} poissonrecon)
+    set (POISSON_BUILD_CMD  make -j${nproc} poissonrecon surfacetrimmer)
     set (POISSON_BIN_PATH "Linux/PoissonRecon")
+    set (SURFACETRIMMER_BIN_PATH "Linux/SurfaceTrimmer")
     if (APPLE)
         set(POISSON_BUILD_CMD COMPILER=${CMAKE_CXX_COMPILER} make -j${nproc} -f Makefile.macos poissonrecon)
     endif()
@@ -218,7 +219,7 @@ externalproject_add(poissonrecon
     CONFIGURE_COMMAND ""
     BUILD_IN_SOURCE 1
     BUILD_COMMAND    ${POISSON_BUILD_CMD}
-    INSTALL_COMMAND  ${CMAKE_COMMAND} -E copy ${SB_SOURCE_DIR}/PoissonRecon/Bin/${POISSON_BIN_PATH} ${SB_INSTALL_DIR}/bin
+    INSTALL_COMMAND  ${CMAKE_COMMAND} -E copy ${SB_SOURCE_DIR}/PoissonRecon/Bin/${POISSON_BIN_PATH} ${SB_SOURCE_DIR}/PoissonRecon/Bin/${SURFACETRIMMER_BIN_PATH} ${SB_INSTALL_DIR}/bin
 )
 
 externalproject_add(dem2mesh

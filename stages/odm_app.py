@@ -42,8 +42,8 @@ class ODMApp:
         meshing = ODMeshingStage('odm_meshing', args, progress=60.0,
                                     max_vertex=args.mesh_size,
                                     oct_tree=max(1, min(14, args.mesh_octree_depth)),
-                                    samples=1.0,
-                                    point_weight=4.0,
+                                    samples=5.0,
+                                    point_weight=1.0,
                                     max_concurrency=args.max_concurrency)
         texturing = ODMMvsTexStage('mvs_texturing', args, progress=70.0)
         georeferencing = ODMGeoreferencingStage('odm_georeferencing', args, progress=80.0,
