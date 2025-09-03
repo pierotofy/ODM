@@ -119,6 +119,9 @@ class ODMOpenMVSStage(types.ODM_Stage):
                     pc_tile = True
                     config.append("--fusion-mode 1")
                     run_densify()
+                elif e.errorCode == 139:
+                    log.ODM_WARNING("OpenMVS segfaulted, let's try one more time")
+                    run_densify()
                 else:
                     raise e
 
