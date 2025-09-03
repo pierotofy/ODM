@@ -912,6 +912,9 @@ def config(argv=None, parser=None):
     if args.fast_orthophoto:
       log.ODM_INFO('Fast orthophoto is turned on, automatically setting --skip-3dmodel')
       args.skip_3dmodel = True
+      if args.use_3dmesh:
+        log.ODM_INFO("Fast orthophoto is turned on, ignoring --use-3dmesh")
+        args.use_3dmesh = False
 
     if args.pc_rectify and not args.pc_classify:
       log.ODM_INFO("Ground rectify is turned on, automatically turning on point cloud classification")

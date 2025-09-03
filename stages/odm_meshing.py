@@ -17,6 +17,8 @@ class ODMeshingStage(types.ODM_Stage):
         # define paths and create working directories
         system.mkdir_p(tree.odm_meshing)
 
+        samples = 1 if args.fast_orthophoto else 5
+
         # Create full 3D model unless --skip-3dmodel is set
         if not args.skip_3dmodel:
           if not io.file_exists(tree.odm_mesh) or self.rerun():
@@ -25,7 +27,7 @@ class ODMeshingStage(types.ODM_Stage):
               mesh.screened_poisson_reconstruction(tree.filtered_point_cloud,
                 tree.odm_mesh,
                 depth=self.params.get('oct_tree'),
-                samples=self.params.get('samples'),
+                samples=samples,
                 maxVertexCount=self.params.get('max_vertex'),
                 pointWeight=self.params.get('point_weight'),
                 threads=max(1, self.params.get('max_concurrency') - 1)), # poissonrecon can get stuck on some machines if --threads == all cores
@@ -60,11 +62,12 @@ class ODMeshingStage(types.ODM_Stage):
                     dsm_resolution=dsm_resolution, 
                     depth=self.params.get('oct_tree'),
                     maxVertexCount=self.params.get('max_vertex'),
-                    samples=self.params.get('samples'),
+                    samples=samples,
                     available_cores=args.max_concurrency,
                     method='poisson' if args.fast_orthophoto else 'gridded',
                     smooth_dsm=True,
-                    max_tiles=None if reconstruction.has_geotagged_photos() else math.ceil(len(reconstruction.photos) * 1.2))
+                    max_tiles=None if reconstruction.has_geotagged_photos() else math.ceil(len(reconstruction.photos) * 1.2),
+                    trim=not args.fast_orthophoto)
           else:
               log.ODM_WARNING('Found a valid ODM 2.5D Mesh file in: %s' %
                               tree.odm_25dmesh)

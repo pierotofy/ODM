@@ -9,7 +9,7 @@ from opendm import point_cloud
 from scipy import signal
 import numpy as np
 
-def create_25dmesh(inPointCloud, outMesh, radius_steps=["0.05"], dsm_resolution=0.05, depth=8, samples=1, maxVertexCount=100000, available_cores=None, method='gridded', smooth_dsm=True, max_tiles=None):
+def create_25dmesh(inPointCloud, outMesh, radius_steps=["0.05"], dsm_resolution=0.05, depth=8, samples=1, maxVertexCount=100000, available_cores=None, method='gridded', smooth_dsm=True, max_tiles=None, trim=True):
     # Create DSM from point cloud
 
     # Create temporary directory
@@ -42,7 +42,8 @@ def create_25dmesh(inPointCloud, outMesh, radius_steps=["0.05"], dsm_resolution=
         mesh = screened_poisson_reconstruction(dsm_points, outMesh, depth=depth, 
                                     samples=samples, 
                                     maxVertexCount=maxVertexCount, 
-                                    threads=max(1, available_cores - 1)), # poissonrecon can get stuck on some machines if --threads == all cores
+                                    threads=max(1, available_cores - 1),
+                                    trim=trim), # poissonrecon can get stuck on some machines if --threads == all cores
     else:
         raise 'Not a valid method: ' + method
 
@@ -133,7 +134,7 @@ def dem_to_mesh_gridded(inGeotiff, outMesh, maxVertexCount, maxConcurrency=1):
     return outMesh
 
 
-def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 1, maxVertexCount=100000, pointWeight=4, threads=context.num_cores):
+def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 1, maxVertexCount=100000, pointWeight=4, threads=context.num_cores, trim=True):
 
     mesh_path, mesh_filename = os.path.split(outMesh)
     # mesh_path = path/to
@@ -177,6 +178,7 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
                     '--threads {threads} '
                     '--density '
                     '--bType 3 '
+                    '--confidence '
                     '--linearFit '.format(**poissonReconArgs))
         except Exception as e:
             log.ODM_WARNING(str(e))
@@ -195,27 +197,31 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
                 log.ODM_WARNING("PoissonRecon failed with %s threads, let's retry with %s..." % (threads * 2, threads))
     
     # Trim
-    cleanupInput = outMeshTrimmed
+    if trim:
+        cleanupInput = outMeshTrimmed
 
-    try:
-        surfaceTrimmerArgs = {
-            'bin': context.surface_trimmer_path,
-            'outfile': outMeshTrimmed,
-            'infile': outMeshDirty,
-            'trim': 7,
-        }
+        try:
+            surfaceTrimmerArgs = {
+                'bin': context.surface_trimmer_path,
+                'outfile': outMeshTrimmed,
+                'infile': outMeshDirty,
+                'trim': 7,
+            }
 
-        system.run('"{bin}" --in "{infile}" '
-                '--out "{outfile}" '
-                '--removeIslands '
-                '--aRatio 0.01 '
-                '--trim {trim} '.format(**surfaceTrimmerArgs))
-        
-        if not os.path.isfile(outMeshTrimmed):
-            log.ODM_WARNING("Mesh trimming failed, falling back...")
+            system.run('"{bin}" --in "{infile}" '
+                    '--out "{outfile}" '
+                    '--removeIslands '
+                    '--aRatio 0.01 '
+                    '--trim {trim} '.format(**surfaceTrimmerArgs))
+            
+            if not os.path.isfile(outMeshTrimmed):
+                log.ODM_WARNING("Mesh trimming failed, falling back...")
+                cleanupInput = outMeshDirty
+        except Exception as e:
+            log.ODM_WARNING(str(e))
             cleanupInput = outMeshDirty
-    except Exception as e:
-        log.ODM_WARNING(str(e))
+    else:
+        log.ODM_INFO("Skipping mesh trimming")
         cleanupInput = outMeshDirty
 
     # Cleanup and reduce vertex count if necessary
@@ -226,11 +232,19 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
         'max_faces': maxVertexCount * 2
     }
 
-    system.run('"{reconstructmesh}" -i "{infile}" '
-         '-o "{outfile}" '
-         '--archive-type 3 '
-         '--remove-spikes 0 --remove-spurious 20 --smooth 0 '
-         '--target-face-num {max_faces} -v 0'.format(**cleanupArgs))
+    try:
+        system.run('"{reconstructmesh}" -i "{infile}" '
+            '-o "{outfile}" '
+            '--archive-type 3 '
+            '--remove-spikes 0 --remove-spurious 20 --smooth 0 '
+            '--target-face-num {max_faces} -v 0'.format(**cleanupArgs))
+    except Exception as e:
+        log.ODM_WARNING(str(e))
+        if os.path.isfile(cleanupInput):
+            log.ODM_WARNING("Skipping mesh cleanup")
+            log.ODM_WARNING("%s --> %s" % (cleanupInput, outMesh))
+            os.rename(cleanupInput, outMesh)
+
 
     # Delete intermediate results
     for f in [outMeshDirty, outMeshTrimmed]:
