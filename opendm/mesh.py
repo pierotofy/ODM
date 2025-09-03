@@ -217,6 +217,10 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
             if not os.path.isfile(outMeshTrimmed):
                 log.ODM_WARNING("Mesh trimming failed, falling back...")
                 cleanupInput = outMeshDirty
+            
+            if os.path.getsize(outMeshTrimmed) < 1024 * 1024:
+                log.ODM_WARNING("Trimmed mesh is too small (< 1MB), falling back...")
+                cleanupInput = outMeshDirty
         except Exception as e:
             log.ODM_WARNING(str(e))
             cleanupInput = outMeshDirty
