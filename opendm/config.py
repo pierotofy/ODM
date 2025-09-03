@@ -228,7 +228,7 @@ def config(argv=None, parser=None):
                         metavar='<string>',
                         action=StoreValue,
                         default='high',
-                        choices=['ultra', 'high', 'medium', 'low', 'lowest'],
+                        choices=['high', 'medium', 'low', 'lowest'],
                         help=('Set feature extraction quality. Higher quality generates better features, but requires more memory and takes longer. '
                             'Can be one of: %(choices)s. Default: '
                             '%(default)s'))
@@ -444,7 +444,7 @@ def config(argv=None, parser=None):
                     metavar='<string>',
                     action=StoreValue,
                     default='medium',
-                    choices=['ultra', 'high', 'medium', 'low', 'lowest'],
+                    choices=['high', 'medium', 'low', 'lowest'],
                     help=('Set point cloud quality. Higher quality generates better, denser point clouds, but requires more memory and takes longer. Each step up in quality increases processing time roughly by a factor of 4x.'
                         'Can be one of: %(choices)s. Default: '
                         '%(default)s'))
