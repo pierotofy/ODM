@@ -139,10 +139,15 @@ class ODMGeoreferencingStage(types.ODM_Stage):
                 if os.path.isfile(filtered_point_cloud_stats):
                     try:
                         with open(filtered_point_cloud_stats, 'r') as stats:
-                             las_stats = json.load(stats)
-                             spacing = powerr(las_stats['spacing'])
-                             log.ODM_INFO("las scale calculated as the minimum of 1/10 estimated spacing or %s, which ever is less." % las_scale)
-                             las_scale = min(spacing, 0.001)
+                            las_stats = json.load(stats)
+                            spacing = powerr(las_stats['spacing'])
+                            if spacing < 100:
+                                las_scale = min(spacing, 0.001)
+                            else:
+                                # Avoid issues with encoding large coordinates
+                                las_scale = spacing / 10.0
+                            log.ODM_INFO("LAS scale set at %s" % las_scale)
+
                     except Exception as e:
                         log.ODM_WARNING("Cannot find file point_cloud_stats.json. Using default las scale: %s" % las_scale)
                 else:
