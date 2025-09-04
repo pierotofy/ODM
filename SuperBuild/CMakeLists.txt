@@ -183,8 +183,8 @@ set(custom_libs OpenSfM
 )
 
 externalproject_add(mve
-    GIT_REPOSITORY  https://github.com/OpenDroneMap/mve.git
-    GIT_TAG         356
+    GIT_REPOSITORY  https://github.com/pierotofy/mve.git
+    GIT_TAG         398
     UPDATE_COMMAND  ""
     SOURCE_DIR      ${SB_SOURCE_DIR}/mve
     CMAKE_ARGS      ${WIN32_CMAKE_ARGS} ${APPLE_CMAKE_ARGS}
