@@ -38,11 +38,13 @@ jobs:
         swap-size-gb: 10
     - uses: webfactory/ssh-agent@v0.9.0
       with:
-        ssh-private-key: ${{ secrets.SSH_KEY }}
-    # - name: Collect git and ssh config files
-    #   run: |
-    #     mkdir root-config
-    #     cp -r ~/.gitconfig  ~/.ssh root-config/
+        ssh-private-key: |
+          ${{ secrets.SSH_KEY }}
+          ${{ secrets.SSH_KEY_SM }}
+    - name: Collect git and ssh config files
+      run: |
+        mkdir root-config
+        cp -r ~/.gitconfig  ~/.ssh root-config/
     - name: Build and push Docker image (AMD64)
       id: docker_build_amd64
       uses: docker/build-push-action@v6
@@ -83,10 +85,10 @@ jobs:
         ssh-private-key: |
           ${{ secrets.SSH_KEY }}
           ${{ secrets.SSH_KEY_SM }}
-    # - name: Collect git and ssh config files
-    #   run: |
-    #     mkdir root-config
-    #     cp -r ~/.gitconfig  ~/.ssh root-config/
+    - name: Collect git and ssh config files
+      run: |
+        mkdir root-config
+        cp -r ~/.gitconfig  ~/.ssh root-config/
     - name: Build and push Docker image (ARM64)
       id: docker_build_arm64
       uses: docker/build-push-action@v6
