@@ -43,6 +43,7 @@ jobs:
           ${{ secrets.SSH_KEY_SM }}
     - name: Collect git and ssh config files
       run: |
+        pwd
         mkdir root-config
         cp -r ~/.gitconfig  ~/.ssh root-config/
     - name: Build and push Docker image (AMD64)
@@ -87,6 +88,7 @@ jobs:
           ${{ secrets.SSH_KEY_SM }}
     - name: Collect git and ssh config files
       run: |
+        pwd
         mkdir root-config
         cp -r ~/.gitconfig  ~/.ssh root-config/
     - name: Build and push Docker image (ARM64)
