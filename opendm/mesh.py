@@ -231,17 +231,23 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
     # Cleanup and reduce vertex count if necessary
     cleanupArgs = {
         'reconstructmesh': context.omvs_reconstructmesh_path,
+        'simplifymesh': context.simplifymesh_path,
         'outfile': outMesh,
         'infile':cleanupInput,
         'max_faces': maxVertexCount * 2
     }
 
     try:
-        system.run('"{reconstructmesh}" -i "{infile}" '
-            '-o "{outfile}" '
-            '--archive-type 3 '
-            '--remove-spikes 0 --remove-spurious 20 --smooth 0 '
-            '--target-face-num {max_faces} -v 0'.format(**cleanupArgs))
+        if os.path.isfile(context.simplifymesh_path):
+            system.run('"{simplifymesh}" "{infile}" '
+                '"{outfile}" '
+                '{max_faces}'.format(**cleanupArgs))
+        else:
+            system.run('"{reconstructmesh}" -i "{infile}" '
+                '-o "{outfile}" '
+                '--archive-type 3 '
+                '--remove-spikes 0 --remove-spurious 20 --smooth 0 '
+                '--target-face-num {max_faces} -v 0'.format(**cleanupArgs))
     except Exception as e:
         log.ODM_WARNING(str(e))
         if os.path.isfile(cleanupInput):

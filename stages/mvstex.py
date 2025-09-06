@@ -81,15 +81,14 @@ class ODMMvsTexStage(types.ODM_Stage):
 
                 # Format arguments to fit Mvs-Texturing app
                 skipGlobalSeamLeveling = ""
-                keepUnseenFaces = ""
+                keepUnseenFaces = "--keep_unseen_faces"
                 nadir = ""
 
                 if args.texturing_skip_global_seam_leveling:
                     skipGlobalSeamLeveling = "--skip_global_seam_leveling"
-                if args.texturing_keep_unseen_faces:
-                    keepUnseenFaces = "--keep_unseen_faces"
                 if (r['nadir']):
                     nadir = '--nadir_mode'
+                    keepUnseenFaces = ''
 
                 # mvstex definitions
                 kwargs = {

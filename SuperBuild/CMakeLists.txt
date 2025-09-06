@@ -279,3 +279,13 @@ externalproject_add(draco
                       -DCMAKE_INSTALL_PREFIX:PATH=${SB_INSTALL_DIR} 
                       ${WIN32_CMAKE_ARGS}
 )
+
+externalproject_add(simplifymesh
+    GIT_REPOSITORY    ssh://git@github.com/pierotofy/simplifymesh.git
+    GIT_TAG           main
+    PREFIX            ${SB_BINARY_DIR}/simplifymesh
+    SOURCE_DIR        ${SB_SOURCE_DIR}/simplifymesh
+    CMAKE_ARGS        -DCMAKE_INSTALL_PREFIX:PATH=${SB_INSTALL_DIR}
+                      ${WIN32_GDAL_ARGS}
+                      ${APPLE_CMAKE_ARGS}
+)

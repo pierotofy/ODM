@@ -543,13 +543,6 @@ def config(argv=None, parser=None):
                         default=False,
                         help=('Skip normalization of colors across all images. Useful when processing radiometric data. Default: %(default)s'))
 
-    parser.add_argument('--texturing-keep-unseen-faces',
-                        action=StoreTrue,
-                        nargs=0,
-                        default=False,
-                        help=('Keep faces in the mesh that are not seen in any camera. '
-                              'Default:  %(default)s'))
-
     parser.add_argument('--texturing-single-material',
                         action=StoreTrue,
                         nargs=0,
@@ -892,7 +885,7 @@ def config(argv=None, parser=None):
                           'Default: %(default)s'))
 
     args, unknown = parser.parse_known_args(argv)
-    DEPRECATED = ["--verbose", "--debug", "--time", "--resize-to", "--depthmap-resolution", "--pc-geometric", "--texturing-data-term", "--texturing-outlier-removal-type", "--texturing-tone-mapping", "--texturing-skip-local-seam-leveling"]
+    DEPRECATED = ["--verbose", "--debug", "--time", "--resize-to", "--depthmap-resolution", "--pc-geometric", "--texturing-data-term", "--texturing-outlier-removal-type", "--texturing-tone-mapping", "--texturing-skip-local-seam-leveling", "--texturing-keep-unseen-faces"]
     unknown_e = [p for p in unknown if p not in DEPRECATED]
     if len(unknown_e) > 0:
         raise parser.error("unrecognized arguments: %s" % " ".join(unknown_e))
