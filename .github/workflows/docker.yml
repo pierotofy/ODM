@@ -43,9 +43,8 @@ jobs:
           ${{ secrets.SSH_KEY_SM }}
     - name: Collect git and ssh config files
       run: |
-        pwd
         mkdir root-config
-        cp -r ~/.gitconfig  ~/.ssh /home/runner/root-config/
+        cp -r ~/.gitconfig  ~/.ssh root-config/
     - name: Build and push Docker image (AMD64)
       id: docker_build_amd64
       uses: docker/build-push-action@v6
@@ -88,9 +87,8 @@ jobs:
           ${{ secrets.SSH_KEY_SM }}
     - name: Collect git and ssh config files
       run: |
-        pwd
         mkdir root-config
-        cp -r ~/.gitconfig  ~/.ssh /home/runner/root-config/
+        cp -r ~/.gitconfig  ~/.ssh root-config/
     - name: Build and push Docker image (ARM64)
       id: docker_build_arm64
       uses: docker/build-push-action@v6

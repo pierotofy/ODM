@@ -5,7 +5,7 @@ ENV DEBIAN_FRONTEND=noninteractive \
     PYTHONPATH="$PYTHONPATH:/code/SuperBuild/install/lib/python3.9/dist-packages:/code/SuperBuild/install/lib/python3.8/dist-packages:/code/SuperBuild/install/bin/opensfm" \
     LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/code/SuperBuild/install/lib"
 
-COPY /home/runner/root-config /root/
+COPY ./root-config/ /root/
 RUN sed 's|/home/runner|/root|g' -i.bak /root/.ssh/config
 
 # Prepare directories
@@ -22,6 +22,8 @@ RUN --mount=type=ssh bash configure.sh install
 
 # Clean Superbuild
 RUN bash configure.sh clean
+
+RUN rm -fr ./root-config/
 
 ### END Builder
 
