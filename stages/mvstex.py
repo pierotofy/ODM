@@ -89,6 +89,9 @@ class ODMMvsTexStage(types.ODM_Stage):
                 if (r['nadir']):
                     nadir = '--nadir_mode'
                     keepUnseenFaces = ''
+                
+                if not reconstruction.is_simple_rgb():
+                    keepUnseenFaces = ''
 
                 # mvstex definitions
                 kwargs = {

@@ -285,6 +285,14 @@ class ODM_Reconstruction(object):
             if p.filename == filename:
                 return p
     
+    def is_simple_rgb(self):
+        if self.multi_camera:
+            return False
+        for p in self.photos:
+            if p.band_name.lower() not in ['rgb', 'redgreenblue']:
+                return False
+        return True
+    
 class ODM_GeoRef(object):
     @staticmethod
     def FromCoordsFile(coords_file):
