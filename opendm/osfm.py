@@ -266,10 +266,10 @@ class OSFMContext:
             ]
             
             if args.matcher_order > 0:
-                if not reconstruction.is_georeferenced():
+                if reconstruction.geotagged_photos_ratio() < 0.7:
                     config.append("matching_order_neighbors: %s" % args.matcher_order)
                 else:
-                    log.ODM_WARNING("Georeferenced reconstruction, ignoring --matcher-order")
+                    log.ODM_WARNING("Enough geotagged images, ignoring --matcher-order")
 
             if args.camera_lens != 'auto':
                 config.append("camera_projection_type: %s" % args.camera_lens.upper())

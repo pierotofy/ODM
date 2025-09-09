@@ -182,7 +182,18 @@ class ODM_Reconstruction(object):
             if photo.latitude is None and photo.longitude is None:
                 return False
 
-        return True 
+        return True
+    
+    def geotagged_photos_ratio(self):
+        if len(self.photos) == 0:
+            return 0
+        
+        geo = 0
+        for photo in self.photos:
+            if photo.latitude is not None or photo.longitude is not None:
+                geo += 1
+
+        return geo / len(self.photos)
 
     def georeference_with_gcp(self, gcp_file, output_coords_file, output_gcp_file, output_model_txt_geo, rerun=False):
         if not io.file_exists(output_coords_file) or not io.file_exists(output_gcp_file) or rerun:
