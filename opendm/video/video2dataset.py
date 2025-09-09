@@ -155,7 +155,7 @@ class Video2Dataset:
         if resolution < w or resolution < h:
             m = max(w, h)
             factor = resolution / m
-            frame_bw = cv2.resize(frame_bw, (int(ceil(w * factor)), int(ceil(h * factor))), interpolation=cv2.INTER_NEAREST)
+            frame_bw = cv2.resize(frame_bw, (int(ceil(w * factor)), int(ceil(h * factor))), interpolation=cv2.INTER_AREA)
 
         if (self.blur_checker is not None):
             blur_score, is_blurry = self.blur_checker.IsBlur(frame_bw, self.frame_index)

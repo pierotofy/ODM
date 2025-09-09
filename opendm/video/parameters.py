@@ -42,5 +42,4 @@ class Parameters:
 
         self.stats_file = args.get("stats_file", None)
 
-        # We will resize the image to this size before processing
         self.internal_resolution = 800

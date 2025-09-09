@@ -12,8 +12,8 @@ class ThresholdBlurChecker:
         return
 
     def IsBlur(self, image_bw, id):
-        var = cv2.Laplacian(image_bw, cv2.CV_64F).var()
-        return var, var < self.threshold
+        variance = cv2.Laplacian(image_bw, cv2.CV_64F).var()
+        return variance, variance < self.threshold
 
 class SimilarityChecker:
     def __init__(self, threshold, max_features=500):
