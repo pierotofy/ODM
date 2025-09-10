@@ -222,7 +222,7 @@ class OSFMContext:
                 megapixels = (w * h) / 1e6
                 multiplier = 1
                     
-                if megapixels < 2:
+                if megapixels < 3:
                     multiplier = 2
                 elif megapixels > 42:
                     multiplier = 0.5
