@@ -184,7 +184,7 @@ set(custom_libs OpenSfM
 
 externalproject_add(mve
     GIT_REPOSITORY  https://github.com/pierotofy/mve.git
-    GIT_TAG         398
+    GIT_TAG         3911
     UPDATE_COMMAND  ""
     SOURCE_DIR      ${SB_SOURCE_DIR}/mve
     CMAKE_ARGS      ${WIN32_CMAKE_ARGS} ${APPLE_CMAKE_ARGS}
@@ -282,7 +282,7 @@ externalproject_add(draco
 
 externalproject_add(simplifymesh
     GIT_REPOSITORY    ssh://git@github.com/pierotofy/simplifymesh.git
-    GIT_TAG           main
+    GIT_TAG           3911
     PREFIX            ${SB_BINARY_DIR}/simplifymesh
     SOURCE_DIR        ${SB_SOURCE_DIR}/simplifymesh
     CMAKE_ARGS        -DCMAKE_INSTALL_PREFIX:PATH=${SB_INSTALL_DIR}
