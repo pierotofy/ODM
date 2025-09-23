@@ -237,7 +237,7 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
     }
 
     try:
-        if os.path.isfile(context.simplifymesh_path):
+        if os.path.isfile(context.simplifymesh_path) and trim:
             system.run('"{simplifymesh}" "{infile}" '
                 '"{outfile}" '
                 '{max_faces}'.format(**cleanupArgs))
