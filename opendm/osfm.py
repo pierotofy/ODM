@@ -150,15 +150,12 @@ class OSFMContext:
             # create file list
             num_zero_alt = 0
             has_alt = True
-            has_gps = False
             with open(list_path, 'w') as fout:
                 for photo in photos:
                     if photo.altitude is None:
                         has_alt = False
                     elif photo.altitude == 0:
                         num_zero_alt += 1
-                    if photo.latitude is not None and photo.longitude is not None:
-                        has_gps = True
 
                     fout.write('%s\n' % os.path.join(images_path, photo.filename))
             
@@ -233,18 +230,9 @@ class OSFMContext:
             else:
                 log.ODM_WARNING("Cannot compute max image dimensions, going with defaults")
 
-            # create config file for OpenSfM
-            if args.matcher_neighbors > 0:
-                matcher_graph_rounds = 0
-                matcher_neighbors = args.matcher_neighbors
-            else:
-                matcher_graph_rounds = 50
-                matcher_neighbors = 0
-            
-            # Always use matcher-neighbors if less than 4 pictures
+            matching_graph_rounds = 50
             if len(photos) <= 3:
-                matcher_graph_rounds = 0
-                matcher_neighbors = 3
+                matching_graph_rounds = 0
 
             config = [
                 "use_exif_size: no",
@@ -252,9 +240,10 @@ class OSFMContext:
                 "feature_process_size: %s" % feature_process_size,
                 "feature_min_frames: %s" % args.min_num_features,
                 "processes: %s" % args.max_concurrency,
-                "matching_gps_neighbors: %s" % matcher_neighbors,
+                "matching_gps_neighbors: 8",
+                "matching_time_neighbors: 5",
                 "matching_gps_distance: 0",
-                "matching_graph_rounds: %s" % matcher_graph_rounds,
+                "matching_graph_rounds: %s" % matching_graph_rounds,
                 "optimize_camera_parameters: %s" % ('no' if args.use_fixed_camera_params else 'yes'),
                 "reconstruction_algorithm: %s" % (args.sfm_algorithm),
                 "undistorted_image_format: tif",
@@ -265,11 +254,9 @@ class OSFMContext:
                 "retriangulation_ratio: 2",
             ]
             
-            if args.matcher_order > 0:
-                if reconstruction.geotagged_photos_ratio() < 0.7:
-                    config.append("matching_order_neighbors: %s" % args.matcher_order)
-                else:
-                    log.ODM_WARNING("Enough geotagged images, ignoring --matcher-order")
+            if reconstruction.geotagged_photos_ratio() < 0.7:
+                config.append("matching_order_neighbors: 16")
+                log.ODM_INFO("Not enough geotagged images, enabling matcher-order")
 
             if args.camera_lens != 'auto':
                 config.append("camera_projection_type: %s" % args.camera_lens.upper())
@@ -282,10 +269,6 @@ class OSFMContext:
                 "flann": "FLANN",
                 "bruteforce": "BRUTEFORCE"
             }
-
-            if not has_gps and not 'matcher_type_is_set' in args:
-                log.ODM_INFO("No GPS information, using BOW matching by default (you can override this by setting --matcher-type explicitly)")
-                matcher_type = "bow"
 
             if matcher_type == "bow":
                 # Cannot use anything other than HAHOG with BOW
