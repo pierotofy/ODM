@@ -103,7 +103,7 @@ class ODMApp:
             elif code == 3:
                 log.ODM_ERROR("ODM can't find a program that is required for processing to run! Did you do a custom build of ODM? (cool!) Make sure that all programs required by ODM are in the right place and are built correctly.")
             else:
-                log.ODM_ERROR("The program exited with a strange error code. Please report it.")
+                log.ODM_ERROR("The program could not process this dataset (a program exited unexpectedly). Have you followed best practices for data acquisition? See https://docs.webodm.net/references/create-successful-maps")
 
             # TODO: more?
 
