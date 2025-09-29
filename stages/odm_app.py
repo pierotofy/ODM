@@ -83,11 +83,11 @@ class ODMApp:
             return 0
         except system.SubprocessException as e:
             print("")
-            print("===== Dumping Info for Geeks (developers need this to fix bugs) =====")
+            print("===== Stack Trace (useful for devs to troubleshoot problems) =====")
             print(str(e))
             stack_trace = traceback.format_exc()
             print(stack_trace)
-            print("===== Done, human-readable information to follow... =====")
+            print("===== End Stack Trace =====")
             print("")
 
             code = e.errorCode

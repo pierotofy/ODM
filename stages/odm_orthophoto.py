@@ -107,7 +107,7 @@ class ODMOrthoPhotoStage(types.ODM_Stage):
             system.run('"{odm_ortho_bin}" -inputFiles {models} '
                        '-logFile "{log}" -outputFile "{ortho}" -resolution {res} -verbose '
                        '-outputCornerFile "{corners}" {bands} {depth_idx} {inpaint} '
-                       '{utm_offsets} {a_srs} {vars} {gdal_configs} '.format(**kwargs), env_vars={'OMP_NUM_THREADS': args.max_concurrency})
+                       '{utm_offsets} {a_srs} {vars} {gdal_configs} '.format(**kwargs), env_vars={'OMP_NUM_THREADS': args.max_concurrency, 'OPENCV_IO_MAX_IMAGE_PIXELS': 2**34})
 
             # Create georeferenced GeoTiff
             if reconstruction.is_georeferenced():
