@@ -93,9 +93,9 @@ class ODMApp:
             code = e.errorCode
             log.logger.log_json_stage_error(str(e), code, stack_trace)
 
-            if code == 139 or code == 134 or code == 1 or code == 3221225477:
+            if code == 139 or code == 134 or code == 1 or code == 3221225477 or code == 136:
                 # Segfault
-                log.ODM_ERROR("Uh oh! Processing stopped because of strange values in the reconstruction. This is often a sign that the input data has some issues or the software cannot deal with it. Have you followed best practices for data acquisition? See https://docs.webodm.net/references/create-successful-maps")
+                log.ODM_ERROR("Uh oh! Processing could not complete. This is often a sign that the input data has some issues or the software cannot deal with it. Have you followed best practices for data acquisition? See https://docs.webodm.net/references/create-successful-maps")
             elif code == 137 or code == 3221226505:
                 log.ODM_ERROR("Mm, we ran out of memory, which is strange. If you've followed best data acquisition practices, you could try to resize your images, lower the quality settings or contact us if you think this is an error.")
             elif code == 132:
