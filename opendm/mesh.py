@@ -157,43 +157,40 @@ def screened_poisson_reconstruction(inPointCloud, outMesh, depth = 8, samples = 
         log.ODM_WARNING("ppc64le platform detected, forcing single-threaded operation for PoissonRecon")
         threads = 1
 
-    while True:
-        poissonReconArgs = {
-            'bin': context.poisson_recon_path,
-            'outfile': outMeshDirty,
-            'infile': inPointCloud,
-            'depth': depth,
-            'samples': samples,
-            'pointWeight': pointWeight,
-            'threads': int(threads)
-        }
+    poissonReconArgs = {
+        'bin': context.poisson_recon_path,
+        'outfile': outMeshDirty,
+        'infile': inPointCloud,
+        'depth': depth,
+        'samples': samples,
+        'pointWeight': pointWeight,
+    }
 
-        # Run PoissonRecon
+    # Run PoissonRecon
+    while True:
         try:
             system.run('"{bin}" --in "{infile}" '
                     '--out "{outfile}" '
                     '--depth {depth} '
                     '--pointWeight {pointWeight} '
                     '--samplesPerNode {samples} '
-                    '--threads {threads} '
                     '--density '
-                    '--confidence'.format(**poissonReconArgs))
+                    '--confidence'.format(**poissonReconArgs), env_vars={'OMP_NUM_THREADS': int(threads)})
         except Exception as e:
             log.ODM_WARNING(str(e))
             
         if os.path.isfile(outMeshDirty):
             break # Done!
+
+        # PoissonRecon will sometimes fail due to race conditions
+        # on certain machines, especially on Windows
+        threads //= 2
+
+        if threads < 1:
+            break
         else:
+            log.ODM_WARNING("PoissonRecon failed with %s threads, let's retry with %s..." % (threads * 2, threads))
 
-            # PoissonRecon will sometimes fail due to race conditions
-            # on certain machines, especially on Windows
-            threads //= 2
-
-            if threads < 1:
-                break
-            else:
-                log.ODM_WARNING("PoissonRecon failed with %s threads, let's retry with %s..." % (threads * 2, threads))
-    
     # Trim
     if trim:
         cleanupInput = outMeshTrimmed
