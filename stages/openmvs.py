@@ -64,6 +64,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
             subres_levels = 2 # The number of lower resolutions to process before estimating output resolution depthmap.
             filter_point_th = -20
             min_resolution = 320 if args.pc_quality in ["low", "lowest"] else 640
+            scene_dense_ply = os.path.join(tree.openmvs, 'scene_dense.ply')
 
             config = [
                 "--resolution-level %s" % int(resolution_level),
@@ -107,6 +108,8 @@ class ODMOpenMVSStage(types.ODM_Stage):
             
             try:
                 run_densify()
+                if not os.path.exists(scene_dense_ply):
+                    raise system.ExitException("Dense reconstruction failed. This could be due to poor georeferencing or insufficient image overlap.")
             except system.SubprocessException as e:
                 # If the GPU was enabled and the program failed,
                 # try to run it again without GPU
@@ -213,9 +216,8 @@ class ODMOpenMVSStage(types.ODM_Stage):
             else:
                 def skip_filtering():
                     # Just rename
-                    scene_dense_ply = os.path.join(tree.openmvs, 'scene_dense.ply')
                     if not os.path.exists(scene_dense_ply):
-                        raise system.ExitException("Dense reconstruction failed. This could be due to poor georeferencing or insufficient image overlap.")
+                        raise system.ExitException("Dense reconstruction failed (no scene reconstructed). This could be due to poor georeferencing or insufficient image overlap.")
 
                     log.ODM_INFO("Skipped filtering, %s --> %s" % (scene_dense_ply, tree.openmvs_model))
                     os.rename(scene_dense_ply, tree.openmvs_model)
