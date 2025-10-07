@@ -83,7 +83,7 @@ def create_dem(input_point_cloud, dem_type, output_type='max', radiuses=['0.56']
         'radiuses': ",".join(map(str, radiuses)),
         'resolution': resolution,
         'maxTiles': 0 if max_tiles is None else max_tiles,
-        'decimation': 1 if decimation is None else decimation,
+        'decimation': 1 if (decimation is None or decimation < 1) else decimation,
         'classification': 2 if dem_type == 'dtm' else -1,
         'tileSize': max_tile_size
     }
