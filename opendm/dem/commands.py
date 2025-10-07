@@ -139,6 +139,7 @@ def create_dem(input_point_cloud, dem_type, output_type='max', radiuses=['0.56']
         'merged_vrt': merged_vrt_path,
         'geotiff_small': geotiff_small_path,
         'geotiff_small_filled': geotiff_small_filled_path,
+        'gapfill_scale': '10%',
         'output': output_path
     }
 
@@ -147,12 +148,20 @@ def create_dem(input_point_cloud, dem_type, output_type='max', radiuses=['0.56']
         # behaves strangely when reading data directly from a .VRT
         # so we need to convert to GeoTIFF first.
         # Scale to 10% size
+
+        with rasterio.open(tiles_vrt_path) as src:
+            min_dimension = min(src.width, src.height)
+        
+        # Handle edge case when VRT size < 10 pixels
+        if min_dimension < 10:
+            kwargs['gapfill_scale'] = '50%'
+
         run('gdal_translate '
                 '-co NUM_THREADS={threads} '
                 '-co BIGTIFF=IF_SAFER '
                 '-co COMPRESS=DEFLATE '
                 '--config GDAL_CACHEMAX {max_memory}% '
-                '-outsize 10% 0 '
+                '-outsize {gapfill_scale} 0 '
                 '"{tiles_vrt}" "{geotiff_small}"'.format(**kwargs))
 
         # Fill scaled
