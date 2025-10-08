@@ -807,6 +807,10 @@ class ODM_Photo:
     
     def is_rgb(self):
         return self.band_name.upper() in ["RGB", "REDGREENBLUE"]
+    
+    def is_jpg(self):
+        _, ext = os.path.splitext(self.filename)
+        return ext.lower() in ['.jpg', '.jpeg']
 
     def camera_id(self):
         return " ".join(

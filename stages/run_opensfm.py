@@ -113,6 +113,11 @@ class ODMOpenSfMStage(types.ODM_Stage):
 
         def radiometric_calibrate(shot_id, image):
             photo = reconstruction.get_photo(shot_id)
+            if photo.is_rgb() and photo.is_jpg():
+                # Nothing to do, there's no support for calibrating RGB JPEGs
+                # and the user probably selected 'camera-calibration' by accident
+                return image
+            
             if photo.is_thermal():
                 return thermal.dn_to_temperature(photo, image, tree.dataset_raw)
             else:
