@@ -77,6 +77,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
                 "--fusion-filter 1",
                 "--sub-resolution-levels %s" % subres_levels,
                 "--archive-type 3",
+                "--estimate-roi 0",
                 '-w "%s"' % depthmaps_dir, 
                 "-v 0"
             ]
@@ -179,6 +180,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
                             '--postprocess-dmaps 0',
                             "--fusion-filter 1",
                             '--geometric-iters 0',
+                            '--estimate-roi 0',
                             '-w "%s"' % depthmaps_dir,
                             '-v 0',
                         ]
