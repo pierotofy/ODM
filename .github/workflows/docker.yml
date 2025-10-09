@@ -41,6 +41,7 @@ jobs:
         ssh-private-key: |
           ${{ secrets.SSH_KEY }}
           ${{ secrets.SSH_KEY_SM }}
+          ${{ secrets.SSH_KEY_OO }}
     - name: Collect git and ssh config files
       run: |
         mkdir root-config
