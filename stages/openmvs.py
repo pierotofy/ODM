@@ -99,7 +99,7 @@ class ODMOpenMVSStage(types.ODM_Stage):
                 extra_config.append("--ignore-mask-label 0")
 
             with open(densify_ini_file, 'w+') as f:
-                f.write("Min Views Filter = 1\nInterpolate Gap Size = 29\nNCC Threshold Keep = 0.95\n")
+                f.write("Min Views Filter = 1\nInterpolate Gap Size = 29\n")
 
             def run_densify():
                 system.run('"%s" "%s" %s' % (context.omvs_densify_path, 
