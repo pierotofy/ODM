@@ -234,12 +234,8 @@ class OSFMContext:
                 log.ODM_WARNING("Cannot compute max image dimensions, going with defaults")
 
             # create config file for OpenSfM
-            if args.matcher_neighbors > 0:
-                matcher_graph_rounds = 0
-                matcher_neighbors = args.matcher_neighbors
-            else:
-                matcher_graph_rounds = 50
-                matcher_neighbors = 0
+            matcher_graph_rounds = 50
+            matcher_neighbors = args.matcher_neighbors
             
             # Always use matcher-neighbors if less than 4 pictures
             if len(photos) <= 3:

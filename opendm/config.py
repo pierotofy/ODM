@@ -245,9 +245,9 @@ def config(argv=None, parser=None):
     parser.add_argument('--matcher-neighbors',
                         metavar='<positive integer>',
                         action=StoreValue,
-                        default=0,
+                        default=8,
                         type=int,
-                        help='Perform image matching with the nearest images based on GPS exif data. Set to 0 to match by triangulation. Default: %(default)s')
+                        help='Perform image matching with the nearest images based on GPS exif data. Set to 0 to disable. Default: %(default)s')
 
     parser.add_argument('--matcher-order',
                         metavar='<positive integer>',
