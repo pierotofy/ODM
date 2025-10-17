@@ -23,6 +23,32 @@ from opendm.osfm import OSFMContext
 from opendm.boundary import as_polygon, export_to_bounds_files
 from opendm.align import compute_alignment_matrix, transform_point_cloud, transform_obj
 from opendm.utils import np_to_json
+import numpy as np
+from pyproj import Transformer
+
+def georeference_obj(obj_file, proj_pipeline, offset_x, offset_y):
+    transformer = Transformer.from_pipeline(proj_pipeline)
+    tmp_obj_file = io.related_file_path(obj_file, postfix="_tmp")
+
+    with open(obj_file, 'r') as fin:
+        with open(tmp_obj_file, 'w') as fout:
+            lines = fin.readlines()
+            for line in lines:
+                if line.startswith("v "):
+                    v = np.fromstring(line.strip()[2:],  sep=' ', dtype=float)
+                    vt = list(transformer.transform(*v)[:3])
+                    vt[0] -= offset_x
+                    vt[1] -= offset_y
+                    fout.write("v " + " ".join(map(str, vt)) + '\n')
+                else:
+                    fout.write(line)
+    
+    # Swap
+    if os.path.isfile(tmp_obj_file):
+        os.unlink(obj_file)
+        os.rename(tmp_obj_file, obj_file)
+    else:
+        log.ODM_WARNING("Cannot reference OBJ file %s" % obj_file)
 
 class ODMGeoreferencingStage(types.ODM_Stage):
     def process(self, args, outputs):
@@ -161,15 +187,15 @@ class ODMGeoreferencingStage(types.ODM_Stage):
                 proj4 = reconstruction.georef.proj4()
 
                 # Build proj4 pipeline to go from topocentric to UTM
-                proj_steps = [
+                proj_pipeline = " ".join([
                     f"+proj=pipeline",
                     f"+step +proj=topocentric +ellps=WGS84 +lon_0={lon} +lat_0={lat} +h_0={alt} +inv",
                     f"+step +proj=cart +ellps=WGS84 +inv",
                     f"+step {proj4}",
-                ]
+                ])
 
                 params += [
-                    f'--filters.projpipeline.coord_op="{" ".join(proj_steps)}"',
+                    f'--filters.projpipeline.coord_op="{proj_pipeline}"',
                     f'--writers.las.offset_x={reconstruction.georef.utm_east_offset}' ,
                     f'--writers.las.offset_y={reconstruction.georef.utm_north_offset}',
                     f'--writers.las.offset_z=0',
@@ -220,6 +246,26 @@ class ODMGeoreferencingStage(types.ODM_Stage):
             else:
                 log.ODM_INFO("Converting point cloud (non-georeferenced)")
                 system.run(cmd + ' ' + ' '.join(stages) + ' ' + ' '.join(params))
+
+            # Georeference textured models
+            for tex_dir_topo, tex_dir in [(tree.odm_25dtexturing_topo, tree.odm_25dtexturing), (tree.odm_texturing_topo, tree.odm_texturing)]:
+                if not io.dir_exists(tex_dir_topo):
+                    continue
+
+                if io.dir_exists(tex_dir) and self.rerun():
+                    shutil.rmtree(tex_dir)
+                
+                io.copy_link(tex_dir_topo, tex_dir)
+
+                if reconstruction.is_georeferenced():
+                    for root, _, files in os.walk(tex_dir):
+                        for file in files:
+                            if file.endswith('.obj'):
+                                obj_file = os.path.join(root, file)
+                                log.ODM_INFO("Georeferencing textured model %s" % obj_file)
+                                georeference_obj(obj_file, proj_pipeline, reconstruction.georef.utm_east_offset, reconstruction.georef.utm_north_offset)
+                else:
+                    log.ODM_INFO("Textured models will not be georeferenced")
 
 
             stats_dir = tree.path("opensfm", "stats", "codem")

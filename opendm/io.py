@@ -32,6 +32,13 @@ def copy(src, dst):
             shutil.copy(src, dst)
         else: raise
 
+def copy_link(src, dst):
+    try:
+        # Try to use hard links first
+        shutil.copytree(src, dst, copy_function=os.link)
+    except Exception as e:
+        shutil.copytree(src, dst)
+
 def rename_file(src, dst):
     try:
         os.rename(src, dst)
