@@ -16,7 +16,7 @@ class ODMPostProcess(types.ODM_Stage):
 
         if args.gltf:
             textured_model = os.path.join(tree.odm_texturing, tree.odm_textured_model_obj)
-            textured_model_25d = os.path.join(tree.odm_texturing_25d, tree.odm_textured_model_obj)
+            textured_model_25d = os.path.join(tree.odm_25dtexturing, tree.odm_textured_model_obj)
             
             if os.path.isfile(textured_model) and not args.skip_3dmodel:
                 input_obj = textured_model
