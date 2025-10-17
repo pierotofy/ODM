@@ -341,6 +341,11 @@ class ODM_GeoRef(object):
     def utm_offset(self):
         return (self.utm_east_offset, self.utm_north_offset)
     
+    def lla_reference(self):
+        longlat = CRS.from_epsg("4326")
+        lon, lat = location.transform2(CRS.from_proj4(self.proj4()), longlat, self.utm_east_offset, self.utm_north_offset)
+        return lon, lat, 0.0
+
 class ODM_Tree(object):
     def __init__(self, root_path, gcp_file = None, geo_file = None, align_file = None):
         # root path to the project
@@ -358,6 +363,8 @@ class ODM_Tree(object):
         self.odm_meshing = os.path.join(self.root_path, 'odm_meshing')
         self.odm_texturing = os.path.join(self.root_path, 'odm_texturing')
         self.odm_25dtexturing = os.path.join(self.root_path, 'odm_texturing_25d')
+        self.odm_texturing_topo = os.path.join(self.root_path, 'odm_texturing_topo')
+        self.odm_25dtexturing_topo = os.path.join(self.root_path, 'odm_texturing_25d_topo')
         self.odm_georeferencing = os.path.join(self.root_path, 'odm_georeferencing')
         self.odm_filterpoints = os.path.join(self.root_path, 'odm_filterpoints')
         self.odm_orthophoto = os.path.join(self.root_path, 'odm_orthophoto')
@@ -373,8 +380,6 @@ class ODM_Tree(object):
         self.opensfm_image_list = os.path.join(self.opensfm, 'image_list.txt')
         self.opensfm_reconstruction = os.path.join(self.opensfm, 'reconstruction.json')
         self.opensfm_reconstruction_nvm = os.path.join(self.opensfm, 'undistorted/reconstruction.nvm')
-        self.opensfm_geocoords_reconstruction = os.path.join(self.opensfm, 'reconstruction.geocoords.json')
-        self.opensfm_topocentric_reconstruction = os.path.join(self.opensfm, 'reconstruction.topocentric.json')
 
         # OpenMVS
         self.openmvs_model = os.path.join(self.openmvs, 'scene_dense_dense_filtered.ply')

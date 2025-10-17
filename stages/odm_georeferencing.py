@@ -156,14 +156,23 @@ class ODMGeoreferencingStage(types.ODM_Stage):
             if reconstruction.is_georeferenced():
                 log.ODM_INFO("Georeferencing point cloud")
 
-                stages.append("transformation")
-                utmoffset = reconstruction.georef.utm_offset()
+                stages.append("projpipeline")
+                lon, lat, alt = reconstruction.georef.lla_reference()
+                proj4 = reconstruction.georef.proj4()
+
+                # Build proj4 pipeline to go from topocentric to UTM
+                proj_steps = [
+                    f"+proj=pipeline",
+                    f"+step +proj=topocentric +ellps=WGS84 +lon_0={lon} +lat_0={lat} +h_0={alt} +inv",
+                    f"+step +proj=cart +ellps=WGS84 +inv",
+                    f"+step {proj4}",
+                ]
 
                 params += [
-                    f'--filters.transformation.matrix="1 0 0 {utmoffset[0]} 0 1 0 {utmoffset[1]} 0 0 1 0 0 0 0 1"',
+                    f'--filters.projpipeline.coord_op="{" ".join(proj_steps)}"',
                     f'--writers.las.offset_x={reconstruction.georef.utm_east_offset}' ,
                     f'--writers.las.offset_y={reconstruction.georef.utm_north_offset}',
-                    '--writers.las.offset_z=0',
+                    f'--writers.las.offset_z=0',
                     f'--writers.las.a_srs="{reconstruction.georef.proj4()}"' # HOBU this should maybe be WKT
                 ]
 

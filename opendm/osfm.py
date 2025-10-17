@@ -349,7 +349,7 @@ class OSFMContext:
             
             # We impose our own reference_lla
             if reconstruction.is_georeferenced():
-                self.write_reference_lla(reconstruction.georef.utm_east_offset, reconstruction.georef.utm_north_offset, reconstruction.georef.proj4())
+                self.write_reference_lla(reconstruction.georef)
         else:
             log.ODM_WARNING("%s already exists, not rerunning OpenSfM setup" % list_path)
 
@@ -579,12 +579,10 @@ class OSFMContext:
         else:
             log.ODM_WARNING("Report %s already exported" % report_path)
     
-    def write_reference_lla(self, offset_x, offset_y, proj4):
+    def write_reference_lla(self, georef):
         reference_lla = self.path("reference_lla.json")
 
-        longlat = CRS.from_epsg("4326")
-        lon, lat = location.transform2(CRS.from_proj4(proj4), longlat, offset_x, offset_y)
-
+        lon, lat, alt = georef.lla_reference()
         with open(reference_lla, 'w') as f:
             f.write(json.dumps({
                 'latitude': lat,

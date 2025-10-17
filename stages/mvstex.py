@@ -32,22 +32,22 @@ class ODMMvsTexStage(types.ODM_Stage):
             
             if not args.skip_3dmodel and (primary or args.use_3dmesh):
                 nonloc.runs += [{
-                    'out_dir': os.path.join(tree.odm_texturing, subdir),
+                    'out_dir': os.path.join(tree.odm_texturing_topo, subdir),
                     'model': tree.odm_mesh,
                     'nadir': False,
                     'primary': primary,
                     'nvm_file': nvm_file,
-                    'labeling_file': os.path.join(tree.odm_texturing, "odm_textured_model_geo_labeling.vec") if subdir else None
+                    'labeling_file': os.path.join(tree.odm_texturing_topo, "odm_textured_model_geo_labeling.vec") if subdir else None
                 }]
 
             if not args.use_3dmesh:
                 nonloc.runs += [{
-                    'out_dir': os.path.join(tree.odm_25dtexturing, subdir),
+                    'out_dir': os.path.join(tree.odm_25dtexturing_topo, subdir),
                     'model': tree.odm_25dmesh,
                     'nadir': True,
                     'primary': primary,
                     'nvm_file': nvm_file,
-                    'labeling_file': os.path.join(tree.odm_25dtexturing, "odm_textured_model_geo_labeling.vec") if subdir else None
+                    'labeling_file': os.path.join(tree.odm_25dtexturing_topo, "odm_textured_model_geo_labeling.vec") if subdir else None
                 }]
 
         if reconstruction.multi_camera:
